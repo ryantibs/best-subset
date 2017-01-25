@@ -1,5 +1,6 @@
 # Best Subset Selection Simulations
 ## Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 
-This project contains comparisons between best subset selection and other 
-popular estimators for sparse regression.
+This project contains tools for running simulations that compare best subset
+selection in regression to other common sparse regression estimators such as
+the lasso and forward stepwise.
