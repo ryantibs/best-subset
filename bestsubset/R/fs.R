@@ -19,6 +19,8 @@
 #'   \item df: vector that gives the (naive) degrees of freedom of the model 
 #'   at each step, i.e., the number of active predictor variables (+ 1 if there
 #'   is an intercept included)
+#'   \item beta: matrix of regression coefficients for each step along the path,
+#'     one column per step 
 #'   \item completepath: a boolean indicating whether the forward stepwise path
 #'   was run to completion (as opposed to being stopped early because the max
 #'   number of steps was achieved)
@@ -27,7 +29,6 @@
 #'   \item x, y: the passed x and y
 #'   \item bx, by: the means of the columns of x, and the mean of y
 #'   \item intercept, normalize: the passed values for intercept and normalize
-#'   \item call: the call to fs()
 #'   }
 #'
 #' @details This function implements forward stepwise regression, adding the
@@ -35,19 +36,18 @@
 #'   predictors---once orthogonalized with respect to the current model---and
 #'   the residual. This entry criterion is standard, and is equivalent to
 #'   choosing the variable that achieves the biggest drop in RSS at each step;
-#'   it is used, e.g., by the step function in R. Note that, for example,
-#'   the lars package implements a stepwise option (with type="step"),
+#'   it is used, e.g., by the \code{step} function in R. Note that, for example,
+#'   the \code{lars} package implements a stepwise option (with type="step"),
 #'   but uses a (mildly) different entry criterion, based on maximal absolute
 #'   correlation between the original (non-orthogonalized) predictors and the 
 #'   residual. 
 #'
-#' @author Ryan Tibshirani, Trevor Hastie, Rob Tibshirani
+#' @author Ryan Tibshirani
+#' @example examples/ex.bs.R
 #' @export fs
 
 fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
-               verbose=FALSE) {
-
-  this.call = match.call()
+              verbose=FALSE) {
   
   # Set up data
   x = as.matrix(x)
@@ -73,7 +73,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   #####
   # Find the first variable to enter and its sign
   z = scale(x,center=F,scale=sqrt(colSums(x^2)))
-  u = t(z)%*%y
+  u = t(z) %*% y
   j.hit = which.max(abs(u))   # Hitting coordinate
   sign.hit = Sign(u[j.hit])   # Hitting sign
 
@@ -84,7 +84,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   # Now iterate to find the sequence of FS estimates
 
   # Things to keep track of, and return at the end
-  buf = min(maxsteps,500)
+  buf = min(maxsteps+1,500)
   action = numeric(buf)      # Actions taken
   df = numeric(buf)          # Degrees of freedom
   beta = matrix(0,p,buf)     # FS estimates
@@ -116,7 +116,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   # Q2: n x (n-r)
   # R:  r x r
     
-  while (k <= maxsteps) {
+  while (k <= maxsteps+1) {
     ##########
     # Check if we've reached the end of the buffer
     if (k > length(action)) {
@@ -127,10 +127,11 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
     }
 
     # Key quantities for the next entry
-    b = backsolve(R,t(Q1)%*%X2)
-    X2.resid = X2 - X1%*%b
+    a = backsolve(R,t(Q1) %*% y)
+    b = backsolve(R,t(Q1) %*% X2)
+    X2.resid = X2 - X1 %*% b
     z = scale(X2.resid,center=F,scale=sqrt(colSums(X2.resid^2)))
-    u = as.numeric(t(z)%*%y)
+    u = as.numeric(t(z) %*% y)
     
     # If the inactive set is empty, nothing will hit
     if (r==min(n-intercept,p)) break
@@ -144,7 +145,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
     # Record the solution
     action[k] = I[j.hit] 
     df[k] = r
-    beta[A,k] = backsolve(R,t(Q1)%*%y)
+    beta[A,k] = a
     
     # Update all of the variables
     r = r+1
@@ -174,7 +175,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   beta = beta[,Seq(1,k-1),drop=FALSE]
   
   # If we reached the maximum number of steps
-  if (k>maxsteps) {
+  if (k>maxsteps+1) {
     if (verbose) {
       cat(sprintf("\nReached the maximum number of steps (%i),",maxsteps))
       cat(" skipping the rest of the path.")
@@ -190,7 +191,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
     # Record the least squares solution. Note that
     # we have already computed this
     bls = rep(0,p)
-    if (length(b)>0) bls[A] = b
+    bls[A] = a
   }
 
   if (verbose) cat("\n")
@@ -205,9 +206,8 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
 
   out = list(action=action,sign=sign,df=df,beta=beta,
     completepath=completepath,bls=bls,x=x0,y=y0,bx=bx,by=by,
-    intercept=intercept,normalize=normalize,call=this.call) 
+    intercept=intercept,normalize=normalize)
   class(out) = "fs"
-  
   return(out)
 }
 
@@ -254,14 +254,14 @@ updateQR = function(Q1,Q2,R,col) {
   
   a = .C("update1",
     Q2=as.double(Q2),
-    w=as.double(t(Q2)%*%col),
+    w=as.double(t(Q2) %*% col),
     m=as.integer(m),
     k=as.integer(k),
     dup=FALSE,
     PACKAGE="bestsubset")
 
   Q2 = matrix(a$Q2,nrow=m)
-  w = c(t(Q1)%*%col,a$w)
+  w = c(t(Q1) %*% col,a$w)
 
   # Re-structure: delete a column from Q2, add one to
   # Q1, and expand R
@@ -279,27 +279,31 @@ updateQR = function(Q1,Q2,R,col) {
 #'
 #' Compute coefficients at a particular step of the forward stepwise path.
 #'
-#' @param object The fs path object, as produced by the fs function. 
+#' @param object The fs object, as produced by the fs function. 
 #' @param s The step (or vector of steps) of the path at which coefficients
-#'   should be computed.  Can be fractional, in which case interpolation is
-#'   performed.
+#'   should be computed. Can be fractional, in which case interpolation is
+#'   performed. If missing, then the default is use all steps of the passed
+#'   fs object.
 #' @param ... Other arguments (currently not used).
 #'
+#' @details Note that at s = 1, there is one nonzero coefficient, at
+#'   s = 2, there are two nonzero coefficients, etc. (This differs from the
+#'   parametrization used in the \code{coef.fs} function in the R package
+#'   \code{selectiveInference}, as the latter function delivers s-1 nonzero
+#'   coefficients at step s, and was written to be consistent with the
+#'   natural parametrization for the least angle regression path.)
+#' 
 #' @export 
 
 coef.fs = function(object, s, ...) {
-  if (object$completepath) {
-    k = length(object$action)+1
-    beta = cbind(object$beta,object$bls)
-  } else {
-    k = length(object$action)
-    beta = object$beta
-  }
-  
-  if (min(s)<0 || max(s)>k) stop(sprintf("s must be between 0 and %i",k))
-  knots = 1:k
-  dec = FALSE
-  return(coef.interpolate(beta,s,knots,dec))
+  beta = object$beta
+  if (object$completepath) beta = cbind(beta,object$bls)
+  k = ncol(beta)-1
+  if (missing(s)) s = 1:k
+  else if (min(s)<0 || max(s)>k) stop(sprintf("s must be between 0 and %i",k))
+  knots = 0:k
+  decreasing = FALSE
+  return(coef.interpolate(beta,s,knots,decreasing))
 }
 
 #' Predict function for fs object.
@@ -311,10 +315,18 @@ coef.fs = function(object, s, ...) {
 #' @param newx Matrix of new predictor variables at which predictions should
 #'   be made; if missing, the original (training) predictors are used.
 #' @param s The step (or vector of steps) of the path at which coefficients
-#'   should be computed.  Can be fractional, in which case interpolation is
-#'   performed.
+#'   should be computed. Can be fractional, in which case interpolation is
+#'   performed. If missing, then the default is use all steps of the passed
+#'   fs object.
 #' @param ... Other arguments (currently not used).
-#'
+#' 
+#' @details Note that at s = 1, there is one nonzero coefficient, at
+#'   s = 2, there are two nonzero coefficients, etc. (This differs from the
+#'   parametrization used in the \code{coef.fs} function in the R package
+#'   \code{selectiveInference}, as the latter function delivers s-1 nonzero
+#'   coefficients at step s, and was written to be consistent with the
+#'   natural parametrization for the least angle regression path.)
+#' 
 #' @export 
 
 predict.fs = function(object, newx, s, ...) {
@@ -331,14 +343,14 @@ predict.fs = function(object, newx, s, ...) {
 
 # Interpolation function to get coefficients
 
-coef.interpolate = function(betas, s, knots, dec=TRUE) {
+coef.interpolate = function(beta, s, knots, decreasing=TRUE) {
   # Sort the s values 
-  o = order(s,dec=dec)
+  o = order(s,decreasing=decreasing)
   s = s[o]
         
   k = length(s)
   mat = matrix(rep(knots,each=k),nrow=k)
-  if (dec) b = s >= mat
+  if (decreasing) b = s >= mat
   else b = s <= mat
   blo = max.col(b,ties.method="first")
   bhi = pmax(blo-1,1)
@@ -348,7 +360,7 @@ coef.interpolate = function(betas, s, knots, dec=TRUE) {
   p[i] = 0
   p[!i] = ((s-knots[blo])/(knots[bhi]-knots[blo]))[!i]
   
-  beta = t((1-p)*t(betas[,blo,drop=FALSE]) + p*t(betas[,bhi,drop=FALSE]))
+  beta = t((1-p)*t(beta[,blo,drop=FALSE]) + p*t(beta[,bhi,drop=FALSE]))
   colnames(beta) = as.character(round(s,3))
   rownames(beta) = NULL
 

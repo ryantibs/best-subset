@@ -30,6 +30,8 @@ A list with the following components:
   \item df: vector that gives the (naive) degrees of freedom of the model 
   at each step, i.e., the number of active predictor variables (+ 1 if there
   is an intercept included)
+  \item beta: matrix of regression coefficients for each step along the path,
+    one column per step 
   \item completepath: a boolean indicating whether the forward stepwise path
   was run to completion (as opposed to being stopped early because the max
   number of steps was achieved)
@@ -38,7 +40,6 @@ A list with the following components:
   \item x, y: the passed x and y
   \item bx, by: the means of the columns of x, and the mean of y
   \item intercept, normalize: the passed values for intercept and normalize
-  \item call: the call to fs()
   }
 }
 \description{
@@ -50,13 +51,30 @@ This function implements forward stepwise regression, adding the
   predictors---once orthogonalized with respect to the current model---and
   the residual. This entry criterion is standard, and is equivalent to
   choosing the variable that achieves the biggest drop in RSS at each step;
-  it is used, e.g., by the step function in R. Note that, for example,
-  the lars package implements a stepwise option (with type="step"),
+  it is used, e.g., by the \code{step} function in R. Note that, for example,
+  the \code{lars} package implements a stepwise option (with type="step"),
   but uses a (mildly) different entry criterion, based on maximal absolute
   correlation between the original (non-orthogonalized) predictors and the 
   residual.
 }
+\examples{
+# Simulate some simple regression data with the first 5 coefficients
+# being nonzero
+n = 100
+p = 10
+xy.obj = sim.xy(n,p,nval=0,ntest=10000,s=5,beta.type=2,snr=0.5)
+x = xy.obj$x
+y = xy.obj$y
+
+# Run forward stepwise regression for 5 steps
+fs.obj = fs(x,y,int=FALSE,maxsteps=5,verbose=TRUE)
+coef(fs.obj)
+
+# Solve best subset selection for 5 sparsity levels
+bs.obj = bs(x,y,int=FALSE,k=1:5,verbose=TRUE)
+coef(bs.obj)
+}
 \author{
-Ryan Tibshirani, Trevor Hastie, Rob Tibshirani
+Ryan Tibshirani
 }
 

@@ -13,13 +13,22 @@
 be made; if missing, the original (training) predictors are used.}
 
 \item{s}{The step (or vector of steps) of the path at which coefficients
-should be computed.  Can be fractional, in which case interpolation is
-performed.}
+should be computed. Can be fractional, in which case interpolation is
+performed. If missing, then the default is use all steps of the passed
+fs object.}
 
 \item{...}{Other arguments (currently not used).}
 }
 \description{
 Predict the response from a new set of predictor variables, using the
   coefficients from a particular step of the forward stepwise path.
+}
+\details{
+Note that at s = 1, there is one nonzero coefficient, at
+  s = 2, there are two nonzero coefficients, etc. (This differs from the
+  parametrization used in the \code{coef.fs} function in the R package
+  \code{selectiveInference}, as the latter function delivers s-1 nonzero
+  coefficients at step s, and was written to be consistent with the
+  natural parametrization for the least angle regression path.)
 }
 
