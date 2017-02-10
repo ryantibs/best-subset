@@ -25,7 +25,7 @@
 #'   }
 #'
 #' @details This function solves best subset selection program:
-#'   \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;\text{subject to}\;\;
+#'   \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;{\rm s.t.}\;\;
 #'     \|\beta\|_0 \leq k}
 #'   for a response vector \eqn{Y} and predictor matrix \eqn{X}. It uses
 #'   projected gradient descent to find an approximate solution to the
