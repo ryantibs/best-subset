@@ -31,9 +31,9 @@ results). Default is NULL, which effectively sets no seed.}
 
 \item{verbose}{Should intermediate progress be printed out? Default is FALSE.}
 
-\item{file, file.rep}{Name of a file to which simulation results will be saved
+\item{file, file.rep}{Name of a file to which simulation results are saved
 (using saveRDS), and a number of repetitions after which intermediate
-results will be saved. Setting file to NULL is interpreted to mean that no
+results are saved. Setting file to NULL is interpreted to mean that no
 simulations results should be saved; setting file.rep to 0 is interpreted
 to mean that simulations results should be saved at the very end, i.e., no
 intermediate saving. Defaults are NULL and 5, respectively.}
@@ -44,29 +44,62 @@ latter's help file for details.}
 \item{Number}{of repetitions of which to average the results. Default is 50.}
 }
 \value{
-A list with components err.train, err.val, err.test, risk, nzs, opt.
-    for the training error, validation error, test error, risk, number of
-    selected nonzero coefficients, and optimism (difference in test and
-    training errors). These are each lists of length N, where N is the number
-    of regression methods under consideration (the length of reg.funs). The
-    ith element of each list is then a matrix of dimension nrep x m, where m 
-    the number of tuning parameters inherent to the ith method. The returned
-    components err.train.ave, err.val.ave, err.test.ave, risk.ave, nzs.ave,
-    opt.ave return the averages of the training error, validation error, etc.
-    over the nrep repetitions. Similarly for the components with postfixes
-    .std, .med, .mad, which return the standard deviation, median, and median
-    absolute deviation, respectively. The returned components with postfixes
-    .tun.val and .tun.oracle are matrices of dimension N x nrep, which return
-    the training error, validation error, etc. when the tuning parameter for
-    each regression method in each repetition is chosen by validation tuning
-    (best validation error) or by oracle tuning (best average risk across all
-    the repetitions).
+A list with components err.train, err.val, err.test, err.rel, risk,
+  nzs, opt for the training error, validation error, test error, relative
+  test error (test error divided by sigma^2), risk, number of
+  selected nonzero coefficients, and optimism (difference in test and
+  training errors). These are each lists of length N, where N is the number
+  of regression methods under consideration (the length of reg.funs). The
+  ith element of each list is then a matrix of dimension nrep x m, where m 
+  the number of tuning parameters inherent to the ith method. The returned
+  components err.train.ave, err.val.ave, err.test.ave, err.rel.ave, risk.ave,
+  nzs.ave, opt.ave return the averages of the training error, validation
+  error, etc. over the nrep repetitions. Similarly for the components with
+  postfixes .std, .med, .mad, which return the standard deviation, median,
+  and median absolute deviation, respectively. The returned components with
+  postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
+  return the training error, validation error, etc. when the tuning parameter
+  for each regression method in each repetition is chosen by validation
+  tuning (best validation error) or by oracle tuning (best average risk
+  across all the repetitions).
 }
 \description{
 Run a set of simulations with the specified configuration.
 }
 \examples{
-# 
+# Simulate in simple regression setting with the first 5 coefficients
+# being nonzero
+set.seed(0)
+n = 100
+p = 20
+nval = n
+ntest = 10000
+
+# Check for gurobi package
+if (!require("gurobi",quietly=TRUE)) {
+  stop("Package gurobi not installed (required here)!")
+}
+
+# Regression functions: lasso, forward stepwise, and best subset selection
+reg.funs = list()
+reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
+reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE)
+reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE)
+
+# Run the master simulation function, then print results
+sim.obj.hisnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,seed=0,
+                     beta.type=2,snr=1,verbose=TRUE)
+sim.obj.hisnr
+
+# Repeat, but now for a lower signal-to-noise ratio
+sim.obj.losnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,
+                           seed=0,beta.type=2,snr=0.1,verbose=TRUE)
+sim.obj.losnr
+
+# Plot simulation results side by side
+par(mfrow=c(1,2))
+plot(sim.obj.hisnr, main="SNR = 1", legend.pos="topright")
+plot(sim.obj.losnr, main="SNR = 0.1", legend.pos="topleft")
 }
 \author{
 Trevor Hastie, Robert Tibshirani, Ryan Tibshirani

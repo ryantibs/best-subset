@@ -8,7 +8,7 @@
 #' @param nval,ntest The number of validation observations, and the number of
 #'   testing observations.
 #' @param rho Parameter that drives pairwise correlations of the predictor
-#'   variables; specifically, predictors i and j will have pairwise correlation
+#'   variables; specifically, predictors i and j have population correlation
 #'   rho^abs(i-j). Default is 0.
 #' @param s number of nonzero coefficients in the underlying regression model.
 #'   Default is 5. (Ignored if beta.type is 4, in which case the number of
@@ -17,8 +17,9 @@
 #' @param beta.type Integer taking values in between 1 and 5, used to specify
 #'   the pattern of nonzero coefficients in the underlying regression model; see
 #'   details below. Default is 1.
-#' @param snr Desired signal-to-noise ratio; the variance of the errors will be
-#'   set accordingly. Default is 1.
+#' @param snr Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
+#'   mu is mean and sigma^2 is the error variance. The error variance is set so
+#'   that the given SNR is achieved. Default is 1.
 #'
 #' @return A list with the following components: x, y, xval, yval, xtest, ytest,
 #'   mutest, beta, and sigma.
@@ -45,6 +46,7 @@
 #' @references Simulation setup based on "Best subset selection via a modern
 #'   optimization lens" by Dimitris Bertsimas, Angela King, and Rahul Mazumder,
 #'   Annals of Statistics, 44(2), 813-852, 2016.
+#' @example examples/ex.fs.R
 #' @export sim.xy
 
 sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
@@ -72,7 +74,7 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
   } else if (beta.type==2) {
     beta[1:s] = 1
   } else if (beta.type==3) {
-    beta[1:s] = seq(10,0.5,length=10)
+    beta[1:10] = seq(10,0.5,length=10)
   } else if (beta.type==4) {
     beta[1:6] = c(-10,-6,-2,2,6,10)
   } else {
@@ -81,14 +83,14 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
   }
 
   # Set snr based on sample variance on large test set 
-  mutest = xtest %*% beta
+  mutest = as.numeric(xtest %*% beta)
   vmu = var(mutest) 
   sigma = sqrt(vmu/snr)
 
   # Generate responses
-  y = x %*% beta + rnorm(n)*sigma
-  yval = xval %*% beta + rnorm(nval)*sigma
-  ytest = mutest + rnorm(ntest)*sigma
+  y = as.numeric(x %*% beta + rnorm(n)*sigma)
+  yval = as.numeric(xval %*% beta + rnorm(nval)*sigma)
+  ytest = as.numeric(mutest + rnorm(ntest)*sigma)
  
   enlist(x,y,xval,yval,xtest,ytest,mutest,beta,sigma)
 }
@@ -115,32 +117,33 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #'   set before repetitions are begun (for reproducibility of the simulation
 #'   results). Default is NULL, which effectively sets no seed.
 #' @param verbose Should intermediate progress be printed out? Default is FALSE.
-#' @param file,file.rep Name of a file to which simulation results will be saved
+#' @param file,file.rep Name of a file to which simulation results are saved
 #'   (using saveRDS), and a number of repetitions after which intermediate
-#'   results will be saved. Setting file to NULL is interpreted to mean that no
+#'   results are saved. Setting file to NULL is interpreted to mean that no
 #'   simulations results should be saved; setting file.rep to 0 is interpreted
 #'   to mean that simulations results should be saved at the very end, i.e., no
 #'   intermediate saving. Defaults are NULL and 5, respectively.
 #' @param rho,s,beta.type,snr Arguments to pass to \code{\link{sim.xy}}; see the
 #'   latter's help file for details.
 #'
-#' @return A list with components err.train, err.val, err.test, risk, nzs, opt.
-#'     for the training error, validation error, test error, risk, number of
-#'     selected nonzero coefficients, and optimism (difference in test and
-#'     training errors). These are each lists of length N, where N is the number
-#'     of regression methods under consideration (the length of reg.funs). The
-#'     ith element of each list is then a matrix of dimension nrep x m, where m 
-#'     the number of tuning parameters inherent to the ith method. The returned
-#'     components err.train.ave, err.val.ave, err.test.ave, risk.ave, nzs.ave,
-#'     opt.ave return the averages of the training error, validation error, etc.
-#'     over the nrep repetitions. Similarly for the components with postfixes
-#'     .std, .med, .mad, which return the standard deviation, median, and median
-#'     absolute deviation, respectively. The returned components with postfixes
-#'     .tun.val and .tun.oracle are matrices of dimension N x nrep, which return
-#'     the training error, validation error, etc. when the tuning parameter for
-#'     each regression method in each repetition is chosen by validation tuning
-#'     (best validation error) or by oracle tuning (best average risk across all
-#'     the repetitions). 
+#' @return A list with components err.train, err.val, err.test, err.rel, risk,
+#'   nzs, opt for the training error, validation error, test error, relative
+#'   test error (test error divided by sigma^2), risk, number of
+#'   selected nonzero coefficients, and optimism (difference in test and
+#'   training errors). These are each lists of length N, where N is the number
+#'   of regression methods under consideration (the length of reg.funs). The
+#'   ith element of each list is then a matrix of dimension nrep x m, where m 
+#'   the number of tuning parameters inherent to the ith method. The returned
+#'   components err.train.ave, err.val.ave, err.test.ave, err.rel.ave, risk.ave,
+#'   nzs.ave, opt.ave return the averages of the training error, validation
+#'   error, etc. over the nrep repetitions. Similarly for the components with
+#'   postfixes .std, .med, .mad, which return the standard deviation, median,
+#'   and median absolute deviation, respectively. The returned components with
+#'   postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
+#'   return the training error, validation error, etc. when the tuning parameter
+#'   for each regression method in each repetition is chosen by validation
+#'   tuning (best validation error) or by oracle tuning (best average risk
+#'   across all the repetitions). 
 #'
 #' @seealso \code{\link{sim.xy}}
 #' @author Trevor Hastie, Robert Tibshirani, Ryan Tibshirani
@@ -154,16 +157,18 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
   
   this.call = match.call()
   if (!is.null(seed)) set.seed(seed)
-  
+
   N = length(reg.funs)
-  nms = names(reg.funs)
-  if (is.null(nms)) nms = paste("Method",1:N)
+  reg.names = names(reg.funs)
+  if (is.null(reg.names)) reg.names = paste("Method",1:N)
   
-  err.train = err.val = err.test = vector(mode="list",length=N)
-  risk = nzs = opt = tim = vector(mode="list",length=N)
+  err.train = err.val = err.test = err.rel = risk = nzs = opt = runtime =
+    vector(mode="list",length=N)
+  names(err.train) = names(err.val) = names(err.test) = names(err.rel) = 
+    names(risk) = names(nzs) = names(opt) = names(runtime) = reg.names
   for (j in 1:N) {
-    err.train[[j]] = err.val[[j]] = err.test[[j]] = matrix(NA,nrep,1)
-    risk[[j]] = nzs[[j]] = opt[[j]] = tim[[j]] = matrix(NA,nrep,1)
+    err.train[[j]] = err.val[[j]] = err.test[[j]] = err.rel[[j]] =
+      risk[[j]] = nzs[[j]] = opt[[j]] = runtime[[j]] = matrix(NA,nrep,1)
   }
   filled = rep(FALSE,N)
 
@@ -171,7 +176,7 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
   for (i in 1:nrep) {
     if (verbose) {
       cat(sprintf("Simulation %i (of %i) ...\n",i,nrep))
-      cat("\tGenerating data ...\n")
+      cat("  Generating data ...\n")
     }
     
     # Generate x, y, xval, yval, xtest, ytest
@@ -180,26 +185,26 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
     # Loop through the regression methods
     for (j in 1:N) {
       if (verbose) {
-        cat(sprintf("\tApplying regression method %i (of %i) ...\n",
+        cat(sprintf("  Applying regression method %i (of %i) ...\n",
                     j,N))
       }
       
       tryCatch({
         # Apply the regression method in hand
-        tim[[j]][i] = system.time({
+        runtime[[j]][i] = system.time({   
           reg.obj = reg.funs[[j]](xy.obj$x,xy.obj$y)
         })[1]
 
         # Grab the coefficients, and predicted values on the training,
         # validation, and testing sets
-        beta = coef(reg.obj)
-        muhat.train = predict(reg.obj,xy.obj$x)
-        muhat.val = predict(reg.obj,xy.obj$xval)
-        muhat.test = predict(reg.obj,xy.obj$xtest)
+        beta = as.matrix(coef(reg.obj))
+        muhat.train = as.matrix(predict(reg.obj,xy.obj$x))
+        muhat.val = as.matrix(predict(reg.obj,xy.obj$xval))
+        muhat.test = as.matrix(predict(reg.obj,xy.obj$xtest))
         
         # Populate empty matrices for our metrics, of appropriate dimension
         if (!filled[j]) {
-          err.train[[j]] = err.val[[j]] = err.test[[j]] = 
+          err.train[[j]] = err.val[[j]] = err.test[[j]] = err.rel[[j]] =
             risk[[j]] = nzs[[j]] = opt[[j]] = matrix(NA,nrep,ncol(beta))
           filled[j] = TRUE
           # N.B. Filling with NAs is important, because the filled flag could
@@ -211,16 +216,17 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
         err.train[[j]][i,] = colMeans((muhat.train - xy.obj$y)^2)
         err.val[[j]][i,] = colMeans((muhat.val - xy.obj$yval)^2)
         err.test[[j]][i,] = colMeans((muhat.test - xy.obj$ytest)^2)
+        err.rel[[j]][i,] = err.test[[j]][i,] / xy.obj$sigma^2
         risk[[j]][i,] = colMeans((muhat.test - xy.obj$mutest)^2)
-        nzs[[j]][i,] = colMeans(beta != 0)
+        nzs[[j]][i,] = colSums(beta != 0)
         opt[[j]][i,] = err.test[[j]][i,] - err.train[[j]][i,]
       }, error = function(err) {
         if (verbose) {
-          cat(paste("\t\tOops! Something went wrong, see error message",
+          cat(paste("    Oops! Something went wrong, see error message",
                     "below; recording all metrics here as NAs ...\n"))
-          cat("\t\t***** Error message *****\n")
-          cat(sprintf("\t\t%s\n",err$message))
-          cat("\t\t*** End error message ***\n")
+          cat("    ***** Error message *****\n")
+          cat(sprintf("    %s\n",err$message))
+          cat("    *** End error message ***\n")
         }
         # N.B. No need to do anything, the metrics are already filled with NAs
       })
@@ -228,81 +234,289 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
 
     # Save intermediate results?
     if (!is.null(file) && file.rep > 0 && i %% file.rep == 0) {
-      saveRDS(enlist(err.train,err.val,err.test,risk,nzs,opt),file)
+      saveRDS(enlist(err.train,err.val,err.test,err.rel,risk,nzs,
+                     opt,runtime),file)
     }
   }
 
-  # Save results now (in case of error below)
-  res = enlist(err.train,err.val,err.test,risk,nzs,opt)
-  if (!is.null(file)) saveRDS(res, file)
+  # Save results now (in case of an error that might occur below)
+  out = enlist(err.train,err.val,err.test,err.rel,risk,nzs,opt,runtime)
+  if (!is.null(file)) saveRDS(out, file)
   
-  # Aggregate our metrics over the simulations
-  stats = compute.stats(res)
+  # Tune according to validation error, and according to risk
+  out = tune.methods(out)
 
-  # Tune according to validation error, and according to oracle
-  tuned = tune.methods(res, stats)
+  # Aggregate our metrics over the simulations
+  out = compute.stats(out)
   
   # Save final results
-  out = c(res, stats, tuned)
+  out = c(out,list(rho=rho,s=s,beta.type=beta.type,snr=snr,call=this.call))
   class(out) = "sim"
-  if (!is.null(file)) saveRDS(out, file)
-  return(out)
+  if (!is.null(file)) { saveRDS(out, file); invisible(out) }
+  else return(out)
 }
 
-compute.stats = function(res) {
-  m = length(res) # Number of metrics
-  N = length(res$err.val) # Number of methods
-  res.ave = res.std = vector(mode="list", length=m)
-  res.med = res.mad = vector(mode="list", length=m)
-  names(res.ave) = paste0(names(res), ".ave")
-  names(res.std) = paste0(names(res), ".std")
-  names(res.med) = paste0(names(res), ".med")
-  names(res.mad) = paste0(names(res), ".mad")
-  
-  for (i in 1:m) {
-    res.ave[[i]] = res.std[[i]] = res.med[[i]] = res.mad[[i]] =
-      vector(mode="list", length=N)
-    names(res.ave[[i]]) = names(res.std[[i]]) = names(res.med[[i]]) =
-      names(res.mad[[i]]) = names(res[[i]])
-    
-    for (j in 1:N) {
-      res.ave[[i]][[j]] = rowMeans(res[[i]][[j]], na.rm=TRUE)
-      res.std[[i]][[j]] = apply(res[[i]][[j]], 2, sd, na.rm=TRUE) /
-        sqrt(rowSums(!is.na(res[[i]][[j]])))
-      res.med[[i]][[j]] = apply(res[[i]][[j]], 2, median, na.rm=TRUE)
-      res.mad[[i]][[j]] = apply(res[[i]][[j]], 2, mad, na.rm=TRUE) /
-        sqrt(rowSums(!is.na(res[[i]][[j]])))
-    }
-  }
-  
-  return(c(res.ave,res.std,res.med,res.mad))
-}
+##############################
 
-tune.methods = function(res, stats) {
+tune.methods = function(obj) {
   # Tune first by min validation error
-  N = length(res$err.val) # Number of methods
-  nrep = nrow(res$err.val[[1]]) # Number of repetitions
-  err.test.tun.val = nzs.tun.val = matrix(NA,nrep,N)
+  N = length(obj$err.val) # Number of methods
+  nrep = nrow(obj$err.val[[1]]) # Number of repetitions
+  method.names = names(obj$err.val) # Names of methods
+  tun.val = err.rel.tun.val = nzs.tun.val = vector(mode="list",length=N)
+  names(tun.val) = names(err.rel.tun.val) = names(nzs.tun.val) = method.names
+  for (j in 1:N) {
+    tun.val[[j]] = err.rel.tun.val[[j]] = nzs.tun.val[[j]] = matrix(NA,nrep,1)
+  }
   
   for (i in 1:nrep) {
     for (j in 1:N) {
-      k.val = which.min(res$err.val[[j]][i,])
-      err.test.tun.val[i,j] = res$err.test[[j]][i,k.val]
-      nzs.tun.val[i,j] = res$nzs[[j]][i,k.val]
+      tun.val[[j]][i] = which.min(obj$err.val[[j]][i,])
+      if (length(tun.val[[j]][i]) == 0) { # Error occurred in rep i
+        err.rel.tun.val[[j]][i] = NA
+        nzs.tun.val[[j]][i] = NA
+      }
+      else { # Repetition i was completed as usual
+        err.rel.tun.val[[j]][i] = obj$err.rel[[j]][i,tun.val[[j]][i]]
+        nzs.tun.val[[j]][i] = obj$nzs[[j]][i,tun.val[[j]][i]]
+      }
     }
   }
 
-  # Tune second by min oracle error (average risk)
-  err.test.tun.oracle = nzs.tun.oracle = matrix(NA,nrep,N)
+  # Tune second by min risk on large test set
+  tun.orc = err.rel.tun.orc = nzs.tun.orc = vector(mode="list",length=N)
+  names(tun.orc) = names(err.rel.tun.orc) = names(nzs.tun.orc) = method.names
+  for (j in 1:N) {
+    tun.orc[[j]] = err.rel.tun.orc[[j]] = nzs.tun.orc[[j]] = matrix(NA,nrep,1)
+  }
   
   for (j in 1:N) {
-    k.oracle = which.min(stats$risk.ave[[j]])
     for (i in 1:nrep) {
-      err.test.tun.oracle[i,j] = res$err.test[[j]][i,k.oracle]
-      nzs.tun.oracle[i,j] = res$nzs[[j]][i,k.oracle]
+      tun.orc[[j]][i] = which.min(obj$risk[[j]][i,])
+      if (length(tun.orc[[j]][i]) == 0) { # Error occurred in rep i
+        err.rel.tun.orc[[j]][i] = NA
+        nzs.tun.orc[[j]][i] = NA
+      }
+      else { # Repetition i was completed as usual
+        err.rel.tun.orc[[j]][i] = obj$err.rel[[j]][i,tun.orc[[j]][i]]
+        nzs.tun.orc[[j]][i] = obj$nzs[[j]][i,tun.orc[[j]][i]]
+      }
     }
   }
 
-  return(enlist(err.test.tun.val,nzs.tun.val,
-                err.test.tun.oracle,nzs.tun.oracle))
+  return(c(obj,enlist(tun.val,err.rel.tun.val,nzs.tun.val,
+                      tun.orc,err.rel.tun.orc,nzs.tun.orc)))
+}
+
+compute.stats = function(obj) {
+  nmet = length(obj) # Number of metrics
+  N = length(obj$err.val) # Number of methods
+  obj.ave = obj.std = vector(mode="list", length=nmet)
+  obj.med = obj.mad = vector(mode="list", length=nmet)
+  names(obj.ave) = paste0(names(obj), ".ave")
+  names(obj.std) = paste0(names(obj), ".std")
+  names(obj.med) = paste0(names(obj), ".med")
+  names(obj.mad) = paste0(names(obj), ".mad")
+  
+  for (i in 1:nmet) {
+    obj.ave[[i]] = obj.std[[i]] = obj.med[[i]] = obj.mad[[i]] =
+      vector(mode="list", length=N)
+    names(obj.ave[[i]]) = names(obj.std[[i]]) = names(obj.med[[i]]) =
+      names(obj.mad[[i]]) = names(obj[[i]])
+    
+    for (j in 1:N) {
+      obj.ave[[i]][[j]] = colMeans(obj[[i]][[j]], na.rm=TRUE)
+      obj.std[[i]][[j]] = apply(obj[[i]][[j]], 2, sd, na.rm=TRUE) /
+        sqrt(colSums(!is.na(obj[[i]][[j]])))
+      obj.med[[i]][[j]] = apply(obj[[i]][[j]], 2, median, na.rm=TRUE)
+      obj.mad[[i]][[j]] = apply(obj[[i]][[j]], 2, mad, na.rm=TRUE) /
+        sqrt(colSums(!is.na(obj[[i]][[j]])))
+    }
+  }
+  
+  return(c(obj,obj.ave,obj.std,obj.med,obj.mad))
+}
+
+##############################
+
+#' Print function for sim object.
+#'
+#' Summarize and print the results of a set of simulations, stored an object
+#'   of class sim (produced by \code{\link{sim.master}}).
+#'
+#' @param x The sim object.
+#' @param type Either "ave" or "med", indicating whether the average or median
+#'   of the relative test error metric should be displayed. Default is "ave".
+#' @param std Should standard errors be displayed (in parantheses)? When type
+#'   is set to "med", the median absolute deviations are shown in place of the
+#'   standard errors. Default is TRUE. 
+#' @param digits Number of digits to display. Default is 3. 
+#' @param ... Other arguments (currently not used).
+#'
+#' @export 
+
+print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
+  type = match.arg(type)
+  
+  if (!is.null(x$call)) {
+    cat("\nCall:\n") # TODO append call
+    dput(x$call)
+  }
+  N = length(x$err.rel.tun.val.ave)
+  nrep = length(x$err.rel.tun.val.ave[[1]])
+
+  cat("\nResults for tuning parameter selection based on validation set:\n\n")
+  if (type=="ave") {
+    col1 = unlist(x$err.rel.tun.val.ave)
+    col2 = unlist(x$nzs.tun.val.ave)
+    col1.std = unlist(x$err.rel.tun.val.std)
+    col2.std = unlist(x$nzs.tun.val.std)
+  }
+  else {
+    col1 = unlist(x$err.rel.tun.val.med)
+    col2 = unlist(x$nzs.tun.val.med)
+    col1.std = unlist(x$err.rel.tun.val.mad)
+    col2.std = unlist(x$nzs.tun.val.mad)
+  }
+
+  tab = round(cbind(col1,col2),digits)
+  tab.std = round(cbind(col1.std,col2.std), digits)
+  if (std) tab = matrix(paste0(tab," (",tab.std,")"),ncol=2)
+  rownames(tab) = names(x$err.rel.tun.val.ave)
+  colnames(tab) = c("(Test error)/sigma^2","Nonzero coefficients")
+  print(tab,quote=F)
+
+  cat("\nResults for tuning parameter selection based on risk (oracle):\n\n")
+  if (type=="ave") {
+    col1 = unlist(x$err.rel.tun.orc.ave)
+    col2 = unlist(x$nzs.tun.orc.ave)
+    col1.std = unlist(x$err.rel.tun.orc.std)
+    col2.std = unlist(x$nzs.tun.orc.std)
+  }
+  else {
+    col1 = unlist(x$err.rel.tun.orc.med)
+    col2 = unlist(x$nzs.tun.orc.med)
+    col1.std = unlist(x$err.rel.tun.orc.mad)
+    col2.std = unlist(x$nzs.tun.orc.mad)
+  }
+
+  tab = round(cbind(col1,col2),digits)
+  tab.std = round(cbind(col1.std,col2.std), digits)
+  if (std) tab = matrix(paste0(tab," (",tab.std,")"),ncol=2)
+  rownames(tab) = names(x$err.rel.tun.orc.ave)
+  colnames(tab) = c("(Test error)/sigma^2","Nonzero coefficients")
+  print(tab,quote=F)
+
+  cat("\n")
+  invisible()
+}
+
+#' Plot function for sim object.
+#'
+#' Plot the results of a set of simulations, stored in an object of class sim 
+#'   (produced by \code{\link{sim.master}}).
+#'
+#' @param x The sim object.
+#' @param method.nums the indices of the methods that should be plotted. Default
+#'   is to 1:length(x$err.rel.ave), which plots all methods.
+#' @param method.names the names of the methods that should be plotted. Default
+#'   is NULL, in which case the names are extracted from the sim object.
+#' @param type Either "ave" or "med", indicating whether the average or median
+#'   of the relative test error metric should be displayed. Default is "ave".
+#' @param std Should standard errors be displayed (in parantheses)? When type
+#'   is set to "med", the median absolute deviations are shown in place of the
+#'   standard errors. Default is TRUE.
+#' @param cols,main,cex.main,legend.pos graphical parameters.
+#' @param make.pdf Should a pdf be produced? Default is FALSE.
+#' @param fig.dir,file.name The figure directory and file name to use, only 
+#'   when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
+#'   is always appended to the given file name.)
+#' @param w,h the width and height (in inches) for the plot, used only when
+#'   make.pdf is TRUE. Defaults are 6 and 6.
+#' @param mar the margins to use for the plot. Default is NULL, in which case
+#'   the margins are set automatically (depending on whether not main is NULL).
+#' @export
+
+plot.sim = function(x, method.nums=1:length(x$err.rel.ave), method.names=NULL,
+                    type=c("ave","med"), std=TRUE, cols=1:8, main=NULL,
+                    cex.main=1.25, legend.pos=c("topright"),
+                    make.pdf=FALSE, fig.dir=".", file.name="sim", w=6, h=6,
+                    mar=NULL) {
+
+  type = match.arg(type)
+  if (is.null(method.names)) method.names = names(x$err.rel.ave[method.nums])
+  if (is.null(mar) && is.null(main)) mar = c(4.25,4.25,1,1)
+  if (is.null(mar) && !is.null(main)) mar = c(4.25,4.25,2.25,1)
+  if (is.null(main)) main = ""
+  cols = rep(cols,length=length(method.nums))
+  ii = method.nums
+
+  if (type=="ave") {
+    xlist = x$nzs.ave
+    ylist = x$err.rel.ave
+    ybars = x$err.rel.std
+  }
+  else {
+    xlist = x$nzs.med
+    ylist = x$err.rel.med
+    ybars = x$err.rel.mad
+  }
+  
+  xlab = "Number of nonzero coefficients"
+  ylab = "(Test error)/sigma^2"
+  
+  if (make.pdf) pdf(file=sprintf("%s/%s.pdf",fig.dir,file.name),w,h)
+  par(mar=mar)
+  xlim = range(unlist(xlist),na.rm=TRUE)
+  ylim = range(unlist(ylist),na.rm=TRUE)
+  if (std) ylim = range(c(unlist(ylist)-unlist(ybars),
+                          unlist(ylist)+unlist(ybars)),na.rm=TRUE)
+  plot(xlist[[ii[1]]], ylist[[ii[1]]], col=cols[1], type="o",
+       xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, main=main,
+       cex.main=cex.main)
+  if (std) segments(xlist[[ii[1]]], ylist[[ii[1]]]-ybars[[ii[1]]],
+                    xlist[[ii[1]]], ylist[[ii[1]]]+ybars[[ii[1]]],
+                    lwd=0.5, col=cols[1])   
+  for (i in Seq(2,length(ii))) {
+    points(xlist[[ii[i]]], ylist[[ii[i]]], col=cols[i], type="o")
+    if (std) segments(xlist[[ii[i]]], ylist[[ii[i]]]-ybars[[ii[i]]],
+                      xlist[[ii[i]]], ylist[[ii[i]]]+ybars[[ii[i]]],
+                      lwd=0.5, col=cols[i])
+  }
+  if (legend.pos != "") legend(legend.pos,legend=method.names,col=cols,lty=1)
+  if (make.pdf) graphics.off()
+}
+
+#' Print function for latex-style tables.
+#'
+#' Print a given table in format digestable by latex.
+#' 
+#' @export print.tex
+
+print.tex = function(tab, tab.se=NULL, digits=3, file=NULL, align="l") {
+  tab = round(tab,digits)
+  n = nrow(tab); m = ncol(tab)
+  rownms = rownames(tab)
+  colnms = colnames(tab)
+  if (!is.null(tab.se)) {
+    tab = matrix(paste0(tab, " (", round(tab.se,digits), ")"), ncol=m)
+  }
+  
+  if (is.null(file)) file = ""
+  cat("", file=file, append=F) # Wipe the file, or the console
+  cat(paste0("\\begin{tabular}{|",paste0(rep(align,m+1),collapse="|"),"|}\n"),
+      file=file, append=T)
+  cat("\\hline\n", file=file, append=T)
+  if (!is.null(colnms)) {
+    for (j in 1:m) cat(paste0("& ", colnms[j]," "), file=file, append=T)
+    cat("\\\\\n", file=file, append=T)
+    cat("\\hline\n", file=file, append=T)
+  }
+  for (i in 1:n) {
+    cat(paste0(rownms[i], " "), file=file, append=T)
+    for (j in 1:m) cat(paste0("& ",tab[i,j]," "), file=file, append=T)
+    cat("\\\\\n", file=file, append=T)
+    cat("\\hline\n", file=file, append=T)
+  }
+  cat(paste0("\\end{tabular}\n"), file=file, append=T)
 }

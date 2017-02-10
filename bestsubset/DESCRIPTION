@@ -1,14 +1,15 @@
 Package: bestsubset
 Type: Package
-Title: Simulations for best subset selection in regression
+Title: Tools for best subset selection in regression
 Version: 1.0.0
 Date: 2016-01-20
 Author: Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 Maintainer: Ryan Tibshirani <ryantibs@stat.cmu.edu>
-Depends: glmnet
-Suggests: gurobi
-Description: Tools for running simulations that compare best subset selection
-  in regression to other common sparse regression estimators such as the lasso
-  and forward stepwise.
+Depends: glmnet, gurobi
+Description: An implementation of best subset selection in regression based on a
+  mixed integer quadratic program formulation of the subset selection problem,
+  and the Gurobi mixed integer program optimizer; also, tools for running
+  simulations comparing best subset selection to other common sparse regression
+  estimators such as the lasso and forward stepwise.
 License: GPL-2
 RoxygenNote: 5.0.1

@@ -13,7 +13,7 @@ sim.xy(n, p, nval, ntest, rho = 0, s = 5, beta.type = 1, snr = 1)
 testing observations.}
 
 \item{rho}{Parameter that drives pairwise correlations of the predictor
-variables; specifically, predictors i and j will have pairwise correlation
+variables; specifically, predictors i and j have population correlation
 rho^abs(i-j). Default is 0.}
 
 \item{s}{number of nonzero coefficients in the underlying regression model.
@@ -25,8 +25,9 @@ the number of strongly nonzero coefficients in a weak sparsity model.)}
 the pattern of nonzero coefficients in the underlying regression model; see
 details below. Default is 1.}
 
-\item{snr}{Desired signal-to-noise ratio; the variance of the errors will be
-set accordingly. Default is 1.}
+\item{snr}{Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
+mu is mean and sigma^2 is the error variance. The error variance is set so
+that the given SNR is achieved. Default is 1.}
 }
 \value{
 A list with the following components: x, y, xval, yval, xtest, ytest,
@@ -55,6 +56,39 @@ The predictors are normal with covariance sigma^2 * Sigma, where
   \item 5: beta has its first s components equal to 1, and the rest decaying
       to zero at an exponential rate
   }
+}
+\examples{
+# Simulate some simple regression data with the first 5 coefficients
+# being nonzero
+set.seed(3)
+n = 100
+p = 20
+ntest = 10000
+xy.obj = sim.xy(n,p,nval=0,ntest=ntest,s=5,beta.type=2,snr=1)
+x = xy.obj$x
+y = xy.obj$y
+xtest = xy.obj$xtest
+mutest = xy.obj$mutest
+
+# Run forward stepwise regression for 8 steps
+fs.obj = fs(x,y,intercept=FALSE,maxsteps=8,verbose=TRUE)
+fs.beta = coef(fs.obj)
+fs.supp = apply(fs.beta != 0, 2, which)
+
+# Solve best subset selection for 8 sparsity levels
+bs.obj = bs(x,y,intercept=FALSE,k=1:8,verbose=TRUE)
+bs.beta = coef(bs.obj)
+bs.supp = apply(bs.beta != 0, 2, which)
+
+# Compare supports of the solutions with 5 and 8 variables
+fs.supp[[5]]; bs.supp[[5]]
+fs.supp[[8]]; bs.supp[[8]]
+
+# Predict on test data and record risk
+fs.pred = predict(fs.obj,newx=xtest)
+bs.pred = predict(fs.obj,newx=xtest)
+colMeans((fs.pred - mutest)^2)
+colMeans((bs.pred - mutest)^2)
 }
 \author{
 Trevor Hastie, Rob Tibshirani, Ryan Tibshirani

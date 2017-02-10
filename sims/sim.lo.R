@@ -1,40 +1,42 @@
 ## Low-dimensional simulation, n=500 and p=100
 library(bestsubset)
+library(glmnet)
 
 # Set some overall simulation parameters
-n = 500; p = 100 # Size of training set, and number of predictors
-nval = 500; ntest = 10000 # Size of validation and testing sets
-nrep = 50 # Number of repetitions for a given setting
+n = 100; p = 50 # Size of training set, and number of predictors
+nval = n; ntest = 10000 # Size of validation and testing sets
+nrep = 10 # Number of repetitions for a given setting
 seed = 0 # Random number generator seed
-snr.vec = c(seq(0.5,3,length=10), 4:10) # SNRs to consider
+type.vec = 1:5 # Simulation settings to consider
+snr.vec = c(seq(0.01,1,length=10), 2:4) # SNRs to consider
 rho = 0.8 # Pairwise predictor correlation (for beta.type = 1)
-root = "rds/sim.lo"
+stem = "sim.lo"
 
+# Regression functions: lasso, forward stepwise, and best subset selection
 reg.funs = list()
-# Lasso
-reg.funs[["Lasso"]] = function(x,y) {
-  return(glmnet(x,y,intercept=FALSE))
-}
-# Forward stepwise
-reg.funs[["Stepwise"]] = function(x,y) {
-  return(fs(x,y,intercept=FALSE))
-}
-# Best subset selection
-reg.funs[["Best subset"]] = function(x,y) {
-  return(bs(x,y,intercept=FALSE))
-}
+reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
+reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE)
+reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE)
 
-
-for (beta.type in 1:5) {
+file.list = c()
+file.name = c()
+for (beta.type in type.vec) {
   for (snr in snr.vec) {
-    file = paste0(root, ".beta", beta.type, ".snr", snr)
+    name = paste0(stem, ".beta", beta.type)
+    file = paste0("rds/", name, ".snr", snr, ".rds")
     cat("..... NEW SIMULATION .....\n")
     cat("--------------------------\n")
     cat(paste0("File: ", file, "\n\n"))
     
     sim.master(n, p, nval, ntest, reg.funs=reg.funs, nrep=nrep, seed=seed,           
                verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
-    
-    cat("\n\n")
+
+    file.list = c(file.list, file)
+    cat("\n")
   }
+  file.name = c(file.name, name)
 }
+
+plot.many.sims(file.list, grouping=rep(type.vec, each=length(snr.vec)),
+               snr.vec=snr.vec, fig.dir="fig", file.name=file.name)
+

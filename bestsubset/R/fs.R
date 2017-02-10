@@ -4,8 +4,8 @@
 #'
 #' @param x Matrix of predictors, of dimension (say) n x p.
 #' @param y Vector of responses, of length (say) n.
-#' @param maxsteps Maximum number of steps of the forward stepwise path to
-#'   compute. Default is 2000.
+#' @param maxsteps Maximum number of steps of the forward stepwise path to 
+#'   compute. Default is min(p,2000).
 #' @param intercept,normalize Should an intercept be included in the regression
 #'   model? Should the predictors be normalized before computing the path?
 #'   Default is TRUE for both.
@@ -43,10 +43,10 @@
 #'   residual. 
 #'
 #' @author Ryan Tibshirani
-#' @example examples/ex.bs.R
+#' @example examples/ex.fs.R
 #' @export fs
 
-fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
+fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
               verbose=FALSE) {
   
   # Set up data
@@ -78,13 +78,14 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   sign.hit = Sign(u[j.hit])   # Hitting sign
 
   if (verbose) {
-    cat(sprintf("1. Adding variable %i, |A|=%i...",j.hit,1))
+    cat(sprintf("1. Added variable %i, |A|=%i...",j.hit,1))
   }
   
   # Now iterate to find the sequence of FS estimates
 
   # Things to keep track of, and return at the end
-  buf = min(maxsteps+1,500)
+  maxsteps = maxsteps + 1
+  buf = min(maxsteps,500)
   action = numeric(buf)      # Actions taken
   df = numeric(buf)          # Degrees of freedom
   beta = matrix(0,p,buf)     # FS estimates
@@ -116,7 +117,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   # Q2: n x (n-r)
   # R:  r x r
     
-  while (k <= maxsteps+1) {
+  while (k <= maxsteps) {
     ##########
     # Check if we've reached the end of the buffer
     if (k > length(action)) {
@@ -162,7 +163,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
     R = updated.qr$R
      
     if (verbose) {
-      cat(sprintf("\n%i. Adding variable %i, |A|=%i...",k,A[r],r))
+      cat(sprintf("\n%i. Added variable %i, |A|=%i...",k,A[r],r))
     }
             
     # Step counter
@@ -175,7 +176,7 @@ fs = function(x, y, maxsteps=2000, intercept=TRUE, normalize=TRUE,
   beta = beta[,Seq(1,k-1),drop=FALSE]
   
   # If we reached the maximum number of steps
-  if (k>maxsteps+1) {
+  if (k > maxsteps) {
     if (verbose) {
       cat(sprintf("\nReached the maximum number of steps (%i),",maxsteps))
       cat(" skipping the rest of the path.")

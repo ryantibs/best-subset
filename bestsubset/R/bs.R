@@ -40,7 +40,7 @@
 #'   Dimitris Bertsimas, Angela King, and Rahul Mazumder, Annals of Statistics,
 #'   44(2), 813-852, 2016. This R implementation is based on Matlab code written
 #'   by Rahul Mazumder.
-#' @example examples/ex.bs.R
+#' @example examples/ex.fs.R
 #' @export bs
 
 bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
@@ -114,7 +114,8 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
   class(out) = "bs"
   return(out)
 }
-  
+
+# @export
 bs.one.k = function(x, y, k, xtx, time.limit=100, nruns=50, maxiter=1000,
                     tol=1e-4, polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {       
   n = nrow(x)
@@ -134,7 +135,8 @@ bs.one.k = function(x, y, k, xtx, time.limit=100, nruns=50, maxiter=1000,
   if (verbose) cat("\n  b. Running Gurobi's mixed integer program solver ... ")
   I = Diagonal(p,1)
   model = list()
-  model$A = rbind(cbind(I, -bigm*I), cbind(-I, -bigm*I), c(rep(0,p),rep(1,p)))
+  rvec =  c(rep(0,p), rep(1,p))
+  model$A = suppressMessages(rbind(cbind(I, -bigm*I), cbind(-I, -bigm*I), rvec))
   model$sense = c(rep("<=",2*p),"=")       # The constraints between Ax and b
   model$rhs = c(rep(0,2*p),k)              # The vector b
   model$ub = c(rep(bigm,p), rep(1,p)) 
