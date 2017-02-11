@@ -1,16 +1,15 @@
-## Low-dimensional simulation, n=500 and p=100
+## Low-dimensional simulation, n=100 and p=10
 library(bestsubset)
-library(glmnet)
 
 # Set some overall simulation parameters
-n = 100; p = 50 # Size of training set, and number of predictors
+n = 100; p = 10 # Size of training set, and number of predictors
 nval = n; ntest = 10000 # Size of validation and testing sets
 nrep = 10 # Number of repetitions for a given setting
 seed = 0 # Random number generator seed
 type.vec = 1:5 # Simulation settings to consider
-snr.vec = c(seq(0.01,1,length=10), 2:4) # SNRs to consider
-rho = 0.8 # Pairwise predictor correlation (for beta.type = 1)
-stem = "sim.lo"
+rho.vec = c(0,0.35,0.7) # Pairwise predictor correlations
+snr.vec = exp(seq(log(0.05),log(3),length=12)) # Signal-to-noise ratios 
+stem = paste0("sim.n",n,".p",p)
 
 # Regression functions: lasso, forward stepwise, and best subset selection
 reg.funs = list()
@@ -18,25 +17,48 @@ reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
 reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE)
 reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE)
 
-file.list = c()
-file.name = c()
+file.list = c() # Vector of files for the saved rds files
+file.name = c() # Vector of file names for the plots 
 for (beta.type in type.vec) {
-  for (snr in snr.vec) {
-    name = paste0(stem, ".beta", beta.type)
-    file = paste0("rds/", name, ".snr", snr, ".rds")
-    cat("..... NEW SIMULATION .....\n")
-    cat("--------------------------\n")
-    cat(paste0("File: ", file, "\n\n"))
-    
-    sim.master(n, p, nval, ntest, reg.funs=reg.funs, nrep=nrep, seed=seed,           
-               verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
-
-    file.list = c(file.list, file)
-    cat("\n")
+  for (rho in rho.vec) {
+    name = paste0(stem, ".beta", beta.type, sprintf(".rho.%0.2f", rho))
+    for (snr in snr.vec) {
+      file = paste0("rds/", name, ".snr", round(snr,2), ".rds")
+      cat("..... NEW SIMULATION .....\n")
+      cat("--------------------------\n")
+      cat(paste0("File: ", file, "\n\n"))
+      
+      sim.master(n, p, nval, ntest, reg.funs=reg.funs, nrep=nrep, seed=seed,           
+                 verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
+      
+      file.list = c(file.list, file)
+      cat("\n")
+    }
+    file.name = c(file.name, name)
   }
-  file.name = c(file.name, name)
 }
 
-plot.many.sims(file.list, grouping=rep(type.vec, each=length(snr.vec)),
-               snr.vec=snr.vec, fig.dir="fig", file.name=file.name)
+grouping = rep(as.numeric(outer(1:length(rho.vec),10*1:length(type.vec),"+")),
+               each=length(snr.vec))
+main = paste0(rep(paste0("Setting ", type.vec), each=length(rho.vec)),
+              rep(paste0(", rho = ", rho.vec), times=length(type.vec)))
+save(list=ls(), file=paste0("rds/",stem,".rda"))
 
+##############################
+# Run the code below to reproduce the figures without rerunning the sims
+
+library(bestsubset)
+load(file="rds/sim.n100.p10.rda")
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, tuning="val",
+               fig.dir="fig/val", file.name=file.name, main=main, log="x")
+
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, tuning="ora",
+               fig.dir="fig/ora", file.name=file.name, main=main, log="x")
+
+## par(ask=TRUE)
+## for (i in 1:length(file.list)) plot(readRDS(file.list[i]),main=file.list[i])
+## par(ask=FALSE)
+## for (i in 1:length(file.list)) {
+##   print(readRDS(file.list[i]))
+##   tmp=readLines(n=1)
+## }

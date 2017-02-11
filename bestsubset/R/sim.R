@@ -74,12 +74,12 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
   } else if (beta.type==2) {
     beta[1:s] = 1
   } else if (beta.type==3) {
-    beta[1:10] = seq(10,0.5,length=10)
+    beta[1:s] = seq(10,0.5,length=s)
   } else if (beta.type==4) {
     beta[1:6] = c(-10,-6,-2,2,6,10)
   } else {
     beta[1:s] = 1
-    beta[(s+1):p] = 0.8^(1:(p-s))
+    beta[(s+1):p] = 0.5^(1:(p-s))
   }
 
   # Set snr based on sample variance on large test set 
@@ -142,8 +142,7 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #'   postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
 #'   return the training error, validation error, etc. when the tuning parameter
 #'   for each regression method in each repetition is chosen by validation
-#'   tuning (best validation error) or by oracle tuning (best average risk
-#'   across all the repetitions). 
+#'   tuning (best validation error) or by oracle tuning (best test error).
 #'
 #' @seealso \code{\link{sim.xy}}
 #' @author Trevor Hastie, Robert Tibshirani, Ryan Tibshirani
@@ -243,7 +242,7 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
   out = enlist(err.train,err.val,err.test,err.rel,risk,nzs,opt,runtime)
   if (!is.null(file)) saveRDS(out, file)
   
-  # Tune according to validation error, and according to risk
+  # Tune according to validation error, and according to test error
   out = tune.methods(out)
 
   # Aggregate our metrics over the simulations
@@ -273,6 +272,7 @@ tune.methods = function(obj) {
     for (j in 1:N) {
       tun.val[[j]][i] = which.min(obj$err.val[[j]][i,])
       if (length(tun.val[[j]][i]) == 0) { # Error occurred in rep i
+        tun.val[[j]][i] = NA
         err.rel.tun.val[[j]][i] = NA
         nzs.tun.val[[j]][i] = NA
       }
@@ -283,29 +283,30 @@ tune.methods = function(obj) {
     }
   }
 
-  # Tune second by min risk on large test set
-  tun.orc = err.rel.tun.orc = nzs.tun.orc = vector(mode="list",length=N)
-  names(tun.orc) = names(err.rel.tun.orc) = names(nzs.tun.orc) = method.names
+  # Tune second by min test error
+  tun.ora = err.rel.tun.ora = nzs.tun.ora = vector(mode="list",length=N)
+  names(tun.ora) = names(err.rel.tun.ora) = names(nzs.tun.ora) = method.names
   for (j in 1:N) {
-    tun.orc[[j]] = err.rel.tun.orc[[j]] = nzs.tun.orc[[j]] = matrix(NA,nrep,1)
+    tun.ora[[j]] = err.rel.tun.ora[[j]] = nzs.tun.ora[[j]] = matrix(NA,nrep,1)
   }
   
   for (j in 1:N) {
     for (i in 1:nrep) {
-      tun.orc[[j]][i] = which.min(obj$risk[[j]][i,])
-      if (length(tun.orc[[j]][i]) == 0) { # Error occurred in rep i
-        err.rel.tun.orc[[j]][i] = NA
-        nzs.tun.orc[[j]][i] = NA
+      tun.ora[[j]][i] = which.min(obj$err.test[[j]][i,])
+      if (length(tun.ora[[j]][i]) == 0) { # Error occurred in rep i
+        tun.ora[[j]][i] = NA
+        err.rel.tun.ora[[j]][i] = NA
+        nzs.tun.ora[[j]][i] = NA
       }
       else { # Repetition i was completed as usual
-        err.rel.tun.orc[[j]][i] = obj$err.rel[[j]][i,tun.orc[[j]][i]]
-        nzs.tun.orc[[j]][i] = obj$nzs[[j]][i,tun.orc[[j]][i]]
+        err.rel.tun.ora[[j]][i] = obj$err.rel[[j]][i,tun.ora[[j]][i]]
+        nzs.tun.ora[[j]][i] = obj$nzs[[j]][i,tun.ora[[j]][i]]
       }
     }
   }
 
   return(c(obj,enlist(tun.val,err.rel.tun.val,nzs.tun.val,
-                      tun.orc,err.rel.tun.orc,nzs.tun.orc)))
+                      tun.ora,err.rel.tun.ora,nzs.tun.ora)))
 }
 
 compute.stats = function(obj) {
@@ -365,7 +366,7 @@ print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
   N = length(x$err.rel.tun.val.ave)
   nrep = length(x$err.rel.tun.val.ave[[1]])
 
-  cat("\nResults for tuning parameter selection based on validation set:\n\n")
+  cat("\nResults for tuning parameters chosen based on validation set:\n\n")
   if (type=="ave") {
     col1 = unlist(x$err.rel.tun.val.ave)
     col2 = unlist(x$nzs.tun.val.ave)
@@ -386,24 +387,24 @@ print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
   colnames(tab) = c("(Test error)/sigma^2","Nonzero coefficients")
   print(tab,quote=F)
 
-  cat("\nResults for tuning parameter selection based on risk (oracle):\n\n")
+  cat("\nResults for tuning parameters chosen based on test set (oracle):\n\n")
   if (type=="ave") {
-    col1 = unlist(x$err.rel.tun.orc.ave)
-    col2 = unlist(x$nzs.tun.orc.ave)
-    col1.std = unlist(x$err.rel.tun.orc.std)
-    col2.std = unlist(x$nzs.tun.orc.std)
+    col1 = unlist(x$err.rel.tun.ora.ave)
+    col2 = unlist(x$nzs.tun.ora.ave)
+    col1.std = unlist(x$err.rel.tun.ora.std)
+    col2.std = unlist(x$nzs.tun.ora.std)
   }
   else {
-    col1 = unlist(x$err.rel.tun.orc.med)
-    col2 = unlist(x$nzs.tun.orc.med)
-    col1.std = unlist(x$err.rel.tun.orc.mad)
-    col2.std = unlist(x$nzs.tun.orc.mad)
+    col1 = unlist(x$err.rel.tun.ora.med)
+    col2 = unlist(x$nzs.tun.ora.med)
+    col1.std = unlist(x$err.rel.tun.ora.mad)
+    col2.std = unlist(x$nzs.tun.ora.mad)
   }
 
   tab = round(cbind(col1,col2),digits)
   tab.std = round(cbind(col1.std,col2.std), digits)
   if (std) tab = matrix(paste0(tab," (",tab.std,")"),ncol=2)
-  rownames(tab) = names(x$err.rel.tun.orc.ave)
+  rownames(tab) = names(x$err.rel.tun.ora.ave)
   colnames(tab) = c("(Test error)/sigma^2","Nonzero coefficients")
   print(tab,quote=F)
 
@@ -432,19 +433,19 @@ print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
 #'   when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
 #'   is always appended to the given file name.)
 #' @param w,h the width and height (in inches) for the plot, used only when
-#'   make.pdf is TRUE. Defaults are 6 and 6.
+#'   make.pdf is TRUE. Defaults are 6 for both.
 #' @param mar the margins to use for the plot. Default is NULL, in which case
 #'   the margins are set automatically (depending on whether not main is NULL).
 #' @export
 
-plot.sim = function(x, method.nums=1:length(x$err.rel.ave), method.names=NULL,
+plot.sim = function(x, method.nums=1:length(x$err.train.ave), method.names=NULL,
                     type=c("ave","med"), std=TRUE, cols=1:8, main=NULL,
                     cex.main=1.25, legend.pos=c("topright"),
-                    make.pdf=FALSE, fig.dir=".", file.name="sim", w=6, h=6,
+                    make.pdf=FALSE, fig.dir=".", file.name="sim", w=6, h=6, 
                     mar=NULL) {
 
   type = match.arg(type)
-  if (is.null(method.names)) method.names = names(x$err.rel.ave[method.nums])
+  if (is.null(method.names)) method.names = names(x$err.train.ave[method.nums])
   if (is.null(mar) && is.null(main)) mar = c(4.25,4.25,1,1)
   if (is.null(mar) && !is.null(main)) mar = c(4.25,4.25,2.25,1)
   if (is.null(main)) main = ""

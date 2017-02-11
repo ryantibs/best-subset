@@ -85,7 +85,9 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
     }
     L = power.method(xtx)$val
   }
-  
+
+  # Trim sparsity levels if we need to, and initialize some variables
+  k = k[k >= 1 & k <= p]
   beta0 = NULL
   nk = length(k)
   beta = matrix(0,p,nk)

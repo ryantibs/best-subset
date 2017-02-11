@@ -6,9 +6,9 @@
 \usage{
 \method{plot}{many.sims}(file.list, grouping, snr.vec, method.nums = NULL,
   method.names = NULL, type = c("ave", "med"), std = TRUE,
-  tuning = c("validation", "oracle"), bayes = TRUE, fig.dir = ".",
-  file.name = NULL, w = 6, h = 6, mar = NULL, cols = 1:8,
-  main = NULL, cex.main = 1.25, legend.pos = "bottomright")
+  tuning = c("validation", "oracle"), fig.dir = ".", file.name = NULL,
+  w = 6, h = 6, mar = NULL, pve = TRUE, cols = 1:8, main = NULL,
+  cex.main = 1.25, log = "x", legend.pos = "bottomright")
 }
 \arguments{
 \item{file.list}{vector of strings that point to saved sim objects (each
@@ -45,13 +45,17 @@ saved figures. Default is NULL, in which case the names "sim1", "sim2",
 etc. are used. (Extensions of "pdf" are always appended to the given file
 names.)}
 
-\item{w, h}{the width and height (in inches) for the plots. Defaults are 6 and
-6.}
+\item{w, h}{the width and height (in inches) for the plots. Defaults are 6 for
+both.}
 
 \item{mar}{the margins to use for the plots. Default is NULL, in which case
 the margins are set automatically (depending on whether not main is NULL).}
 
-\item{cols, main, cex.main, legend.pos}{graphical parameters.}
+\item{pve}{Should the (population) proportion of variance explained be shown,
+corresponding to each SNR level under consideration? This is snr/(1+snr).
+Default is TRUE.}
+
+\item{cols, main, cex.main, log, legend.pos}{graphical parameters.}
 }
 \description{
 Plot the results over several sets of simulations, where the same methods are

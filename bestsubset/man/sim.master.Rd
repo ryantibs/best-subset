@@ -60,8 +60,7 @@ A list with components err.train, err.val, err.test, err.rel, risk,
   postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
   return the training error, validation error, etc. when the tuning parameter
   for each regression method in each repetition is chosen by validation
-  tuning (best validation error) or by oracle tuning (best average risk
-  across all the repetitions).
+  tuning (best validation error) or by oracle tuning (best test error).
 }
 \description{
 Run a set of simulations with the specified configuration.

@@ -4,7 +4,7 @@
 \alias{plot.sim}
 \title{Plot function for sim object.}
 \usage{
-\method{plot}{sim}(x, method.nums = 1:length(x$err.rel.ave),
+\method{plot}{sim}(x, method.nums = 1:length(x$err.train.ave),
   method.names = NULL, type = c("ave", "med"), std = TRUE, cols = 1:8,
   main = NULL, cex.main = 1.25, legend.pos = c("topright"),
   make.pdf = FALSE, fig.dir = ".", file.name = "sim", w = 6, h = 6,
@@ -35,7 +35,7 @@ when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
 is always appended to the given file name.)}
 
 \item{w, h}{the width and height (in inches) for the plot, used only when
-make.pdf is TRUE. Defaults are 6 and 6.}
+make.pdf is TRUE. Defaults are 6 for both.}
 
 \item{mar}{the margins to use for the plot. Default is NULL, in which case
 the margins are set automatically (depending on whether not main is NULL).}
