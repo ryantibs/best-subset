@@ -1,5 +1,6 @@
 ## Low-dimensional simulation, n=100 and p=10
 library(bestsubset)
+library(lars)
 
 # Set some overall simulation parameters
 n = 100; p = 10 # Size of training set, and number of predictors
@@ -21,7 +22,7 @@ file.list = c() # Vector of files for the saved rds files
 file.name = c() # Vector of file names for the plots 
 for (beta.type in type.vec) {
   for (rho in rho.vec) {
-    name = paste0(stem, ".beta", beta.type, sprintf(".rho.%0.2f", rho))
+    name = paste0(stem, ".beta", beta.type, sprintf(".rho%0.2f", rho))
     for (snr in snr.vec) {
       file = paste0("rds/", name, ".snr", round(snr,2), ".rds")
       cat("..... NEW SIMULATION .....\n")
@@ -49,11 +50,21 @@ save(list=ls(), file=paste0("rds/",stem,".rda"))
 
 library(bestsubset)
 load(file="rds/sim.n100.p10.rda")
-plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, tuning="val",
-               fig.dir="fig/val", file.name=file.name, main=main, log="x")
 
-plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, tuning="ora",
-               fig.dir="fig/ora", file.name=file.name, main=main, log="x")
+source("../bestsubset/R/plot.R")
+
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, what="err",
+               tuning="val", fig.dir="fig/val", file.name=file.name, main=main,
+               tex.dir="tex")
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, what="non",
+               tuning="val", fig.dir="fig/val", file.name=file.name, main=main,
+               tex.dir="tex")
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, what="err",
+               tuning="ora", fig.dir="fig/ora", file.name=file.name, main=main,
+               tex.dir="tex")
+plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, what="non",
+               tuning="ora", fig.dir="fig/ora", file.name=file.name, main=main,
+               tex.dir="tex")
 
 ## par(ask=TRUE)
 ## for (i in 1:length(file.list)) plot(readRDS(file.list[i]),main=file.list[i])

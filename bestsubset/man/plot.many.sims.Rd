@@ -5,10 +5,11 @@
 \title{Plot the results over several simulation settings.}
 \usage{
 \method{plot}{many.sims}(file.list, grouping, snr.vec, method.nums = NULL,
-  method.names = NULL, type = c("ave", "med"), std = TRUE,
-  tuning = c("validation", "oracle"), fig.dir = ".", file.name = NULL,
-  w = 6, h = 6, mar = NULL, pve = TRUE, cols = 1:8, main = NULL,
-  cex.main = 1.25, log = "x", legend.pos = "bottomright")
+  method.names = NULL, what = c("error", "nonzeros"),
+  tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
+  fig.dir = ".", file.name = NULL, w = 6, h = 6, mar = NULL,
+  pve = TRUE, cols = 1:8, main = NULL, cex.main = 1.25, log = "x",
+  legend.pos = "bottomright", tex.dir = ".")
 }
 \arguments{
 \item{file.list}{vector of strings that point to saved sim objects (each
@@ -26,17 +27,22 @@ is NULL, in which case all methods are plotted.}
 \item{method.names}{the names of the methods that should be plotted. Default
 is NULL, in which case the names are extracted from the sim objects.}
 
+\item{what}{one of "error" or "nonzeros", indicating whether to plot the
+relative test error or number of nonzeros, for each method across the given
+SNR levels. Default is "error".}
+
+\item{tuning}{one of "validation" or "oracle", indicating whether the tuning
+parameter for each method should be chosen according to minimizing
+validation error, or according to minimizing test error. Default is
+"validation".}
+
 \item{type}{Either "ave" or "med", indicating whether the average or median
-of the relative test error metric should be displayed. Default is "ave".}
+of the test error (or number of nonzeros, if what is "nonzeros") should be
+displayed. Default is "ave".}
 
 \item{std}{Should standard errors be displayed (in parantheses)? When type
 is set to "med", the median absolute deviations are shown in place of the
 standard errors. Default is TRUE.}
-
-\item{tuning}{one of "validation" or "oracle", indicating whether the tuning
-parameter for each method in each simulation setting should be chosen
-according to minimizing validation error, or according to minimizing risk
-on test set. Default is "validation".}
 
 \item{fig.dir}{The figure directory to use. Default is ".".}
 
@@ -56,6 +62,8 @@ corresponding to each SNR level under consideration? This is snr/(1+snr).
 Default is TRUE.}
 
 \item{cols, main, cex.main, log, legend.pos}{graphical parameters.}
+
+\item{tex.dir}{The latex directory to use. Default is ".".}
 }
 \description{
 Plot the results over several sets of simulations, where the same methods are
