@@ -17,6 +17,8 @@ reg.funs = list()
 reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
 reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE)
 reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE)
+reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
+                                                  nrelax=10,nlam=50)
 
 file.list = c() # Vector of files for the saved rds files
 file.name = c() # Vector of file names for the plots 
@@ -50,8 +52,6 @@ save(list=ls(), file=paste0("rds/",stem,".rda"))
 
 library(bestsubset)
 load(file="rds/sim.n100.p10.rda")
-
-source("../bestsubset/R/plot.R")
 
 plot.many.sims(file.list, grouping=grouping, snr.vec=snr.vec, what="err",
                tuning="val", fig.dir="fig/val", file.name=file.name, main=main,

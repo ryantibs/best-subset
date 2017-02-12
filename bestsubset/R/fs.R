@@ -293,7 +293,8 @@ updateQR = function(Q1,Q2,R,col) {
 #'   \code{selectiveInference}, as the latter function delivers s-1 nonzero
 #'   coefficients at step s, and was written to be consistent with the
 #'   natural parametrization for the least angle regression path.)
-#' 
+#'
+#' @export coef.fs
 #' @export 
 
 coef.fs = function(object, s, ...) {
@@ -327,7 +328,8 @@ coef.fs = function(object, s, ...) {
 #'   \code{selectiveInference}, as the latter function delivers s-1 nonzero
 #'   coefficients at step s, and was written to be consistent with the
 #'   natural parametrization for the least angle regression path.)
-#' 
+#'
+#' @export predict.fs
 #' @export 
 
 predict.fs = function(object, newx, s, ...) {

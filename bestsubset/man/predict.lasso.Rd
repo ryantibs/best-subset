@@ -4,7 +4,7 @@
 \alias{predict.lasso}
 \title{Predict function for lasso object.}
 \usage{
-\method{predict}{lasso}(object, newx, s = NULL, type = "link")
+\method{predict}{lasso}(object, newx, s = NULL)
 }
 \description{
 Predict function for lasso object.

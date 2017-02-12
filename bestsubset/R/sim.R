@@ -354,6 +354,7 @@ compute.stats = function(obj) {
 #' @param digits Number of digits to display. Default is 3. 
 #' @param ... Other arguments (currently not used).
 #'
+#' @export print.sim
 #' @export 
 
 print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
@@ -436,6 +437,8 @@ print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
 #'   make.pdf is TRUE. Defaults are 6 for both.
 #' @param mar the margins to use for the plot. Default is NULL, in which case
 #'   the margins are set automatically (depending on whether not main is NULL).
+#'
+#' @export plot.sim
 #' @export
 
 plot.sim = function(x, method.nums=1:length(x$err.train.ave), method.names=NULL,
@@ -491,7 +494,7 @@ plot.sim = function(x, method.nums=1:length(x$err.train.ave), method.names=NULL,
 #' Print function for latex-style tables.
 #'
 #' Print a given table in format digestable by latex.
-#' 
+#'
 #' @export print.tex
 
 print.tex = function(tab, tab.se=NULL, digits=3, file=NULL, align="l") {
