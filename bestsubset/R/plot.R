@@ -39,17 +39,19 @@
 #'   corresponding to each SNR level under consideration? This is snr/(1+snr).
 #'   Default is TRUE.
 #' @param cols,main,cex.main,log,legend.pos graphical parameters.
-#' @param tex.dir The latex directory to use. Default is ".".
+#' @param tex.dir The latex directory to use. Default is NULL, which means that
+#'   no lines of tex (\includegraphics statements, for the figures created) will
+#'   be produced.
 #'
 #' @export plot.many.sims
 
-plot.many.sims = function(file.list, grouping, snr.vec,method.nums=NULL,
+plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
                           method.names=NULL, what=c("error","nonzeros"),
                           tuning=c("validation","oracle"), type=c("ave","med"),
                           std=TRUE, fig.dir=".", file.name=NULL, w=6, h=6,
                           mar=NULL, pve=TRUE, cols=1:8, main=NULL,
                           cex.main=1.25, log="x", legend.pos="bottomright",
-                          tex.dir=".") {
+                          tex.dir=NULL) {
 
   what = match.arg(what)
   tuning = match.arg(tuning)
@@ -130,7 +132,7 @@ plot.many.sims = function(file.list, grouping, snr.vec,method.nums=NULL,
     }
     
     if (pve) {
-      axis(side=3, at=snr.vec, labels=round(snr.vec/(1+snr.vec),2))
+      axis(side=3, at=snr.vec, labels=sprintf("%0.2f",snr.vec/(1+snr.vec)))
       mtext(side=3, line=2.5, "Proportion of variance explained")
     }
 
@@ -139,18 +141,20 @@ plot.many.sims = function(file.list, grouping, snr.vec,method.nums=NULL,
     cat(sprintf("%s/%s.pdf",fig.dir,plot.name[i]),"\n")
   }
 
-  # Produce tex lines
-  stem = get.stem(file.name)
-  tex.name = paste0(ifelse(what=="error","err.","nzs."),
-                    ifelse(tuning=="validation","val.","ora."),stem)
-  tex.file = sprintf("%s/%s.tex",tex.dir,tex.name)
-  cat("", file=tex.file, append=FALSE) # Wipe the file
-  frac = 0.32
-  for (i in 1:length(groups)) {
-    cat(sprintf("\\includegraphics[width=%0.2f\\textwidth]{{%s/%s}.pdf}\n",
-                frac,fig.dir,plot.name[i]), file=tex.file, append=TRUE)
+  # Produce tex lines, if we are asked to
+  if (!is.null(tex.dir)) {
+    stem = get.stem(file.name)
+    tex.name = paste0(ifelse(what=="error","err.","nzs."),
+                      ifelse(tuning=="validation","val.","ora."),stem)
+    tex.file = sprintf("%s/%s.tex",tex.dir,tex.name)
+    cat("", file=tex.file, append=FALSE) # Wipe the file
+    frac = 0.32
+    for (i in 1:length(groups)) {
+      cat(sprintf("\\includegraphics[width=%0.2f\\textwidth]{{%s/%s}.pdf}\n",
+                  frac,fig.dir,plot.name[i]), file=tex.file, append=TRUE)
+    }
+    cat(tex.file,"\n")
   }
-  cat(tex.file,"\n")
 }
 
 get.stem = function(str.vec) {

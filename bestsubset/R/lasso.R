@@ -81,7 +81,7 @@ coef.lasso.from.glmnet = function(object, s=NULL) {
     min.lam = min(object$lambda)
     max.lam = max(object$lambda)
     svec = log(seq(exp(max.lam),exp(min.lam),length=object$nlambda))
-    return(glmnet::coef.glmnet(object,s=svec))
+    return(glmnet::coef.glmnet(object,s=svec,exact=TRUE))
   }
 }
 

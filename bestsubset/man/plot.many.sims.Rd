@@ -9,7 +9,7 @@
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
   fig.dir = ".", file.name = NULL, w = 6, h = 6, mar = NULL,
   pve = TRUE, cols = 1:8, main = NULL, cex.main = 1.25, log = "x",
-  legend.pos = "bottomright", tex.dir = ".")
+  legend.pos = "bottomright", tex.dir = NULL)
 }
 \arguments{
 \item{file.list}{vector of strings that point to saved sim objects (each
@@ -63,7 +63,9 @@ Default is TRUE.}
 
 \item{cols, main, cex.main, log, legend.pos}{graphical parameters.}
 
-\item{tex.dir}{The latex directory to use. Default is ".".}
+\item{tex.dir}{The latex directory to use. Default is NULL, which means that
+no lines of tex (\includegraphics statements, for the figures created) will
+be produced.}
 }
 \description{
 Plot the results over several sets of simulations, where the same methods are
