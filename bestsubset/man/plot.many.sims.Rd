@@ -5,10 +5,10 @@
 \title{Plot the results over several simulation settings.}
 \usage{
 \method{plot}{many.sims}(file.list, grouping, snr.vec, method.nums = NULL,
-  method.names = NULL, what = c("error", "nonzeros"),
+  method.names = NULL, what = c("error", "prop", "nonzero"),
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
   fig.dir = ".", file.name = NULL, w = 6, h = 6, mar = NULL,
-  pve = TRUE, cols = 1:8, main = NULL, cex.main = 1.25, log = "x",
+  cols = 1:8, main = NULL, cex.main = 1.25, log = "x",
   legend.pos = "bottomright", tex.dir = NULL)
 }
 \arguments{
@@ -27,9 +27,11 @@ is NULL, in which case all methods are plotted.}
 \item{method.names}{the names of the methods that should be plotted. Default
 is NULL, in which case the names are extracted from the sim objects.}
 
-\item{what}{one of "error" or "nonzeros", indicating whether to plot the
-relative test error or number of nonzeros, for each method across the given
-SNR levels. Default is "error".}
+\item{what}{one of "error", "prop", or "nonzero", indicating whether to plot
+the relative test error, test proportion of variance explained, or number
+of nonzeros, for each method across the given SNR levels. When what is
+"prop", the x-axis is population proportion of variance explained, instead
+of SNR. Default is "error".}
 
 \item{tuning}{one of "validation" or "oracle", indicating whether the tuning
 parameter for each method should be chosen according to minimizing
@@ -37,7 +39,7 @@ validation error, or according to minimizing test error. Default is
 "validation".}
 
 \item{type}{Either "ave" or "med", indicating whether the average or median
-of the test error (or number of nonzeros, if what is "nonzeros") should be
+of the test error (or number of nonzeros, if what is "nonzero") should be
 displayed. Default is "ave".}
 
 \item{std}{Should standard errors be displayed (in parantheses)? When type
@@ -57,18 +59,14 @@ both.}
 \item{mar}{the margins to use for the plots. Default is NULL, in which case
 the margins are set automatically (depending on whether not main is NULL).}
 
-\item{pve}{Should the (population) proportion of variance explained be shown,
-corresponding to each SNR level under consideration? This is snr/(1+snr).
-Default is TRUE.}
-
 \item{cols, main, cex.main, log, legend.pos}{graphical parameters.}
 
 \item{tex.dir}{The latex directory to use. Default is NULL, which means that
-no lines of tex (\includegraphics statements, for the figures created) will
+no lines of tex (includegraphics statements, for the figures created) will
 be produced.}
 }
 \description{
-Plot the results over several sets of simulations, where the same methods are
-  run over different simulations settings.
+Plot results over several sets of simulations, where the same methods are run
+  over different simulations settings.
 }
 

@@ -4,15 +4,13 @@
 \alias{sim.master}
 \title{Master function for running simulations.}
 \usage{
-sim.master(n, p, nval, ntest, reg.funs, nrep = 50, seed = NULL,
-  verbose = FALSE, file = NULL, file.rep = 5, rho = 0, s = 5,
-  beta.type = 1, snr = 1)
+sim.master(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose = FALSE,
+  file = NULL, file.rep = 5, rho = 0, s = 5, beta.type = 1, snr = 1)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
 
-\item{nval, ntest}{The number of validation observations, and the number of
-testing observations.}
+\item{nval}{The number of validation observations.}
 
 \item{reg.funs}{This is a list of functions, representing the regression
 procedures to be used (evaluated) in the simulation. Each element of the 
@@ -31,7 +29,7 @@ results). Default is NULL, which effectively sets no seed.}
 
 \item{verbose}{Should intermediate progress be printed out? Default is FALSE.}
 
-\item{file, file.rep}{Name of a file to which simulation results are saved
+\item{file, file.rep}{Name of a file to which simulation results are saved 
 (using saveRDS), and a number of repetitions after which intermediate
 results are saved. Setting file to NULL is interpreted to mean that no
 simulations results should be saved; setting file.rep to 0 is interpreted
@@ -44,23 +42,23 @@ latter's help file for details.}
 \item{Number}{of repetitions of which to average the results. Default is 50.}
 }
 \value{
-A list with components err.train, err.val, err.test, err.rel, risk,
-  nzs, opt for the training error, validation error, test error, relative
-  test error (test error divided by sigma^2), risk, number of
-  selected nonzero coefficients, and optimism (difference in test and
-  training errors). These are each lists of length N, where N is the number
-  of regression methods under consideration (the length of reg.funs). The
-  ith element of each list is then a matrix of dimension nrep x m, where m 
+A list with components err.train, err.val, err.test, err.rel, prop,
+  risk, nzs, opt for the training error, validation error, test error,
+  relative test error (test error divided by sigma^2), test proportion of
+  variance explained, risk, number of selected nonzero coefficients, and
+  relative optimism (difference in test error and training error, divided by
+  training error). These are each lists of length N, where N is the number of
+  regression methods under consideration (the length of reg.funs). The ith
+  element of each list is then a matrix of dimension nrep x m, where m is
   the number of tuning parameters inherent to the ith method. The returned
-  components err.train.ave, err.val.ave, err.test.ave, err.rel.ave, risk.ave,
-  nzs.ave, opt.ave return the averages of the training error, validation
-  error, etc. over the nrep repetitions. Similarly for the components with
-  postfixes .std, .med, .mad, which return the standard deviation, median,
-  and median absolute deviation, respectively. The returned components with
-  postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
-  return the training error, validation error, etc. when the tuning parameter
-  for each regression method in each repetition is chosen by validation
-  tuning (best validation error) or by oracle tuning (best test error).
+  components err.train.ave, err.val.ave, etc. return the average of the
+  training errors, validation errors, etc. over the nrep repetitions.
+  Similarly for the components with postfixes .std, .med, .mad, which return
+  the standard deviation, median, and median absolute deviation. The returned
+  components with postfixes .tun.val and .tun.orc are each lists of length N, 
+  which return the appropriate metric when the tuning parameter for each
+  regression method in each repetition is chosen by validation tuning (best
+  validation error) or by oracle tuning (best test error).
 }
 \description{
 Run a set of simulations with the specified configuration.
@@ -72,7 +70,6 @@ set.seed(0)
 n = 100
 p = 20
 nval = n
-ntest = 10000
 
 # Check for gurobi package
 if (!require("gurobi",quietly=TRUE)) {
@@ -88,10 +85,10 @@ reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=5,nlam=50)
 
 # Run the master simulation function, for two different SNRs 
-sim.obj.hisnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,
-                           seed=0,beta.type=2,s=5,snr=1,verbose=TRUE)
-sim.obj.losnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,
-                           seed=0,beta.type=2,s=5,snr=0.1,verbose=TRUE)
+sim.obj.hisnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
+                           beta.type=2,s=5,snr=1,verbose=TRUE)
+sim.obj.losnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
+                           beta.type=2,s=5,snr=0.1,verbose=TRUE)
 
 # Print simulation results
 sim.obj.hisnr
@@ -103,6 +100,7 @@ plot(sim.obj.hisnr, method.nums=1:3, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, method.nums=1:3, main="SNR = 0.1", legend.pos="topleft")
 
 # Plot simulation results, including relaxed lasso (it looks a bit crazy)
+par(mfrow=c(1,2))
 plot(sim.obj.hisnr, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, main="SNR = 0.1", legend.pos="topleft")
 }

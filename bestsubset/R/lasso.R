@@ -72,6 +72,8 @@ coef.lasso.with.intercept = function(object, s=NULL) {
   return(beta.left+beta.right)
 }
 
+#' @export coef.lasso.from.glmnet
+
 coef.lasso.from.glmnet = function(object, s=NULL) {
   class(object) = "glmnet"
   if (length(object$lambda)==object$nlambda) {
@@ -81,7 +83,9 @@ coef.lasso.from.glmnet = function(object, s=NULL) {
     min.lam = min(object$lambda)
     max.lam = max(object$lambda)
     svec = log(seq(exp(max.lam),exp(min.lam),length=object$nlambda))
-    return(glmnet::coef.glmnet(object,s=svec,exact=TRUE))
+    return(glmnet::coef.glmnet(object,s=svec))
+    # RJT TODO: should we used exact=TRUE above? Requires additional
+    # arguments to match the initial call to glmnet(), kind of clunky
   }
 }
 

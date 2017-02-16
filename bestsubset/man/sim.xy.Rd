@@ -4,13 +4,12 @@
 \alias{sim.xy}
 \title{Predictors and responses generation.}
 \usage{
-sim.xy(n, p, nval, ntest, rho = 0, s = 5, beta.type = 1, snr = 1)
+sim.xy(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
 
-\item{nval, ntest}{The number of validation observations, and the number of
-testing observations.}
+\item{nval}{The number of validation observations.}
 
 \item{rho}{Parameter that drives pairwise correlations of the predictor
 variables; specifically, predictors i and j have population correlation
@@ -30,20 +29,21 @@ mu is mean and sigma^2 is the error variance. The error variance is set so
 that the given SNR is achieved. Default is 1.}
 }
 \value{
-A list with the following components: x, y, xval, yval, xtest, ytest,
-  mutest, beta, and sigma.
+A list with the following components: x, y, xval, yval, Sigma, beta,
+  and sigma.
 }
 \description{
 Generate a predictor matrix x, and response vector y, following a specified
-  setup.  Actually, three pairs of predictors and responses are generated:
-  one for training, one for validation, and one for testing.
+  setup.  Actually, two pairs of predictors and responses are generated:
+  one for training, and one for validation.
 }
 \details{
-The predictors are normal with covariance sigma^2 * Sigma, where
-  sigma^2 is set according to the desired signal-to-noise ratio, and Sigma
-  has (i,j)th entry rho^abs(i-j). The first 4 options for the nonzero pattern
+The data model is: \eqn{Y \sim N(X\beta, \sigma^2 I)}. 
+  The predictor variables have covariance matrix Sigma, with (i,j)th entry
+  rho^abs(i-j). The error variance sigma^2 is set according to the desired
+  signal-to-noise ratio. The first 4 options for the nonzero pattern
   of the underlying regression coefficients beta follow the simulation setup
-  in Bertsimas, King, and Mazumder (2016), and the last is a weak sparsity
+  in Bertsimas, King, and Mazumder (2016), and the 5th is a weak sparsity
   option:
   \itemize{
   \item 1: beta has s components of 1, occurring at (roughly) equally-spaced

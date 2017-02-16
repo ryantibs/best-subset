@@ -1,7 +1,7 @@
 #' Plot the results over several simulation settings.
 #'
-#' Plot the results over several sets of simulations, where the same methods are
-#'   run over different simulations settings.
+#' Plot results over several sets of simulations, where the same methods are run
+#'   over different simulations settings.
 #'
 #' @param file.list vector of strings that point to saved sim objects (each
 #'   object produced by a call to \code{\link{sim.master}}).
@@ -13,15 +13,17 @@
 #'   is NULL, in which case all methods are plotted.
 #' @param method.names the names of the methods that should be plotted. Default
 #'   is NULL, in which case the names are extracted from the sim objects.
-#' @param what one of "error" or "nonzeros", indicating whether to plot the
-#'   relative test error or number of nonzeros, for each method across the given
-#'   SNR levels. Default is "error".
+#' @param what one of "error", "prop", or "nonzero", indicating whether to plot
+#'   the relative test error, test proportion of variance explained, or number
+#'   of nonzeros, for each method across the given SNR levels. When what is
+#'   "prop", the x-axis is population proportion of variance explained, instead
+#'   of SNR. Default is "error". 
 #' @param tuning one of "validation" or "oracle", indicating whether the tuning
 #'   parameter for each method should be chosen according to minimizing
 #'   validation error, or according to minimizing test error. Default is
 #'   "validation".
 #' @param type Either "ave" or "med", indicating whether the average or median
-#'   of the test error (or number of nonzeros, if what is "nonzeros") should be
+#'   of the test error (or number of nonzeros, if what is "nonzero") should be
 #'   displayed. Default is "ave".
 #' @param std Should standard errors be displayed (in parantheses)? When type
 #'   is set to "med", the median absolute deviations are shown in place of the
@@ -35,23 +37,19 @@
 #'   both.
 #' @param mar the margins to use for the plots. Default is NULL, in which case
 #'   the margins are set automatically (depending on whether not main is NULL).
-#' @param pve Should the (population) proportion of variance explained be shown,
-#'   corresponding to each SNR level under consideration? This is snr/(1+snr).
-#'   Default is TRUE.
 #' @param cols,main,cex.main,log,legend.pos graphical parameters.
 #' @param tex.dir The latex directory to use. Default is NULL, which means that
-#'   no lines of tex (\includegraphics statements, for the figures created) will
+#'   no lines of tex (includegraphics statements, for the figures created) will
 #'   be produced.
 #'
 #' @export plot.many.sims
 
 plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
-                          method.names=NULL, what=c("error","nonzeros"),
+                          method.names=NULL, what=c("error","prop","nonzero"),
                           tuning=c("validation","oracle"), type=c("ave","med"),
                           std=TRUE, fig.dir=".", file.name=NULL, w=6, h=6,
-                          mar=NULL, pve=TRUE, cols=1:8, main=NULL,
-                          cex.main=1.25, log="x", legend.pos="bottomright",
-                          tex.dir=NULL) {
+                          mar=NULL, cols=1:8, main=NULL, cex.main=1.25, log="x",
+                          legend.pos="bottomright", tex.dir=NULL) {
 
   what = match.arg(what)
   tuning = match.arg(tuning)
@@ -59,7 +57,7 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
   if (is.null(file.name)) file.name = paste0("sim",1:length(file.list))
   if (is.null(mar)) {
     mar = c(4.25,4.25,1,1)
-    if (pve) mar[3] = mar[3]+2
+    #if (pve) mar[3] = mar[3]+2
     if (!is.null(main)) mar[3] = mar[3]+2.25
   }
   if (is.null(main)) main = ""
@@ -67,6 +65,23 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
   main = rep(main,length(groups))
   legend.pos = rep(legend.pos,length(groups))
   plot.name = numeric(length(groups))
+
+  # Set the x-axis, and axes labels
+  if (what=="error") {
+    xvar = snr.vec
+    xlab = "Signal-to-noise ratio"
+    ylab = "(Test error)/sigma^2"
+  }
+  else if (what=="prop") {
+    xvar = snr.vec/(1+snr.vec)
+    xlab = "Population signal-to-noise ratio"
+    ylab = "Test signal-to-noise ratio"
+  }
+  else {
+    xvar = snr.vec
+    xlab = "Signal-to-noise ratio"
+    ylab = "Number of nonzeros"
+  }
   
   for (i in 1:length(groups)) {
     # Extract metrics from all the simulations in the current group
@@ -79,51 +94,28 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
                                    names(sim.obj$err.train.ave[method.nums])
 
       # Grab the y-values for the plot
-      if (what=="error" && tuning=="validation" && type=="ave") {
-        ymat = rbind(ymat, unlist(sim.obj$err.rel.tun.val.ave[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$err.rel.tun.val.std[method.nums]))
-      }
-      else if (what=="error" && tuning=="oracle" && type=="ave") {
-        ymat = rbind(ymat, unlist(sim.obj$err.rel.tun.ora.ave[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$err.rel.tun.ora.std[method.nums]))
-      }
-      else if (what=="error" && tuning=="validation" && type=="med") {
-        ymat = rbind(ymat, unlist(sim.obj$err.rel.tun.val.med[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$err.rel.tun.val.mad[method.nums]))
-      }
-      else if (what=="error" && tuning=="oracle" && type=="med") {
-        ymat = rbind(ymat, unlist(sim.obj$err.rel.tun.ora.med[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$err.rel.tun.ora.mad[method.nums]))
-      }
-      else if (what=="nonzeros" && tuning=="validation" && type=="ave") {
-        ymat = rbind(ymat, unlist(sim.obj$nzs.tun.val.ave[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$nzs.tun.val.std[method.nums]))
-      }
-      else if (what=="nonzeros" && tuning=="oracle" && type=="ave") {
-        ymat = rbind(ymat, unlist(sim.obj$nzs.tun.ora.ave[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$nzs.tun.ora.std[method.nums]))
-      }
-      else if (what=="nonzeros" && tuning=="validation" && type=="med") {
-        ymat = rbind(ymat, unlist(sim.obj$nzs.tun.val.med[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$nzs.tun.val.mad[method.nums]))
-      }
-      else if (what=="nonzeros" && tuning=="oracle" && type=="med") {
-        ymat = rbind(ymat, unlist(sim.obj$nzs.tun.ora.med[method.nums]))
-        ystd = rbind(ystd, unlist(sim.obj$nzs.tun.ora.mad[method.nums]))
-      }
+      comp.name = paste0(
+        switch(what,error="err.rel.",prop="prop.",nonzero="nzs."),"tun.",
+        switch(tuning,validation="val.",oracle="ora."))
+      comp.name.val = paste0(comp.name, switch(type,ave="ave",med="med"))
+      comp.name.std = paste0(comp.name, switch(type,ave="std",med="mad"))
+      ymat = rbind(ymat, unlist(sim.obj[[comp.name.val]][method.nums]))
+      ystd = rbind(ystd, unlist(sim.obj[[comp.name.std]][method.nums]))
     }
-      
-    xlab = "Signal-to-noise ratio"
-    ylab = ifelse(what=="error","(Test error)/sigma^2","Number of nonzeros")
-    plot.name[i] = paste0(ifelse(what=="error","err.","nzs."),file.name[i])
+
+    # Set the plot name and the colors
+    plot.name[i] = paste0(switch(what,error="err.",prop="pro.",nonzero="nzs."),
+                          file.name[i])
     cols = rep(cols,length=length(method.nums))
-    
+
+    # Produce the plot
     pdf(file=sprintf("%s/%s.pdf",fig.dir,plot.name[i]),w,h)
     par(mar=mar)
-    matplot(snr.vec, ymat, type="o", pch=19, lty=1, col=cols, log=log,
-            ylim=range(c(ymat-ystd,ymat+ystd)), xlab=xlab, ylab=ylab)
+    matplot(xvar, ymat, type="o", pch=19, lty=1, col=cols, log=log,
+            ylim=range(c(ymat-ystd,ymat+ystd)), xlab=xlab, ylab=ylab,
+            main=main[i], cex.main=cex.main)
     for (k in 1:nrow(ystd)) {
-      segments(snr.vec[k], ymat[k,]-ystd[k,], snr.vec[k],
+      segments(xvar[k], ymat[k,]-ystd[k,], xvar[k],
                ymat[k,]+ystd[k,], lwd=0.5, col=cols)
     }
     
@@ -131,12 +123,11 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
       legend(legend.pos[i],legend=method.names,col=cols,lty=1)
     }
     
-    if (pve) {
-      axis(side=3, at=snr.vec, labels=sprintf("%0.2f",snr.vec/(1+snr.vec)))
-      mtext(side=3, line=2.5, "Proportion of variance explained")
-    }
-
-    mtext(side=3, line=4, main[i], cex=cex.main)
+    ## if (pve) {
+    ##   axis(side=3, at=xvar, labels=sprintf("%0.2f",snr.vec/(1+snr.vec)))
+    ##   mtext(side=3, line=2.5, "Proportion of variance explained")
+    ## }
+    ## mtext(side=3, line=4, main[i], cex=cex.main)
     graphics.off()
     cat(sprintf("%s/%s.pdf",fig.dir,plot.name[i]),"\n")
   }
@@ -144,8 +135,8 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
   # Produce tex lines, if we are asked to
   if (!is.null(tex.dir)) {
     stem = get.stem(file.name)
-    tex.name = paste0(ifelse(what=="error","err.","nzs."),
-                      ifelse(tuning=="validation","val.","ora."),stem)
+    tex.name = paste0(switch(what,error="err.",prop="pro.",nonzero="nzs."),
+                      switch(tuning,validation="val.",,oracle="ora."),stem)
     tex.file = sprintf("%s/%s.tex",tex.dir,tex.name)
     cat("", file=tex.file, append=FALSE) # Wipe the file
     frac = 0.32

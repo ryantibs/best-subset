@@ -1,15 +1,14 @@
 ## Low-dimensional simulation, n=100 and p=10
 library(bestsubset)
-library(lars)
 
 # Set some overall simulation parameters
 n = 100; p = 10 # Size of training set, and number of predictors
 nval = n; ntest = 10000 # Size of validation and testing sets
 nrep = 10 # Number of repetitions for a given setting
 seed = 0 # Random number generator seed
-type.vec = 1:5 # Simulation settings to consider
+type.vec = c(1:3,5) # Simulation settings to consider
 rho.vec = c(0,0.35,0.7) # Pairwise predictor correlations
-snr.vec = exp(seq(log(0.05),log(3),length=12)) # Signal-to-noise ratios 
+snr.vec = exp(seq(log(0.05),log(6),length=10)) # Signal-to-noise ratios 
 stem = paste0("sim.n",n,".p",p)
 
 # Regression functions: lasso, forward stepwise, and best subset selection
@@ -53,34 +52,24 @@ save(list=ls(), file=paste0("rds/",stem,".rda"))
 library(bestsubset)
 load(file="rds/sim.n100.p10.rda")
 
-# Redefine file.list, file.name, grouping, main so that we leave out Setting 4
-type.vec.new = c(1:3,5)
-num1 = length(rho.vec)*length(snr.vec)
-ind1 = as.numeric(outer(1:num1,(type.vec.new-1)*num1,"+"))
-file.list.new = file.list[ind1]
-grouping.new = grouping[ind1]
-num2 = length(rho.vec)
-ind2 = as.numeric(outer(1:num2,(type.vec.new-1)*num2,"+"))
-file.name.new = file.name[ind2]
-main.new = main[ind2]
+# Validation tuning
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",
+               tuning="val", fig.dir="fig/val", file.name=file.name,
+               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro",
+               tuning="val", fig.dir="fig/val", file.name=file.name,
+               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",
+               tuning="val", fig.dir="fig/val", file.name=file.name,
+               main=main, tex.dir="tex")
 
-plot.many.sims(file.list.new, grouping.new, snr.vec=snr.vec, what="err",
-               tuning="val", fig.dir="fig/val", file.name=file.name.new,
-               main=main.new, tex.dir="tex")
-plot.many.sims(file.list.new, grouping.new, snr.vec=snr.vec, what="non",
-               tuning="val", fig.dir="fig/val", file.name=file.name.new,
-               main=main.new, tex.dir="tex")
-plot.many.sims(file.list.new, grouping.new, snr.vec=snr.vec, what="err",
-               tuning="ora", fig.dir="fig/ora", file.name=file.name.new,
-               main=main.new, tex.dir="tex")
-plot.many.sims(file.list.new, grouping.new, snr.vec=snr.vec, what="non",
-               tuning="ora", fig.dir="fig/ora", file.name=file.name.new,
-               main=main.new, tex.dir="tex")
-
-## par(ask=TRUE)
-## for (i in 1:length(file.list)) plot(readRDS(file.list[i]),main=file.list[i])
-## par(ask=FALSE)
-## for (i in 1:length(file.list)) {
-##   print(readRDS(file.list[i]))
-##   tmp=readLines(n=1)
-## }
+# Oracle tuning
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",
+               tuning="ora", fig.dir="fig/ora", file.name=file.name,
+               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro",
+               tuning="ora", fig.dir="fig/ora", file.name=file.name,
+               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",
+               tuning="ora", fig.dir="fig/ora", file.name=file.name,
+               main=main, tex.dir="tex")

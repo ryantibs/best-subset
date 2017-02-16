@@ -34,6 +34,10 @@ match.row = function(mat, a) {
   return(which(rowSums(abs(scale(mat,center=a,scale=F)))==0))
 }
 
+# Trace convenience function
+
+Trace = function(mat) sum(diag(mat))
+
 # Centering and scaling convenience function
 
 standardize = function(x, y, intercept, normalize) {

@@ -36,7 +36,8 @@
 #' 
 #' @author Ryan Tibshirani 
 #' @references This function utilizes the MIO formulation for subset selection
-#'   as described in "Best subset selection via a modern optimization lens" bye#'   Dimitris Bertsimas, Angela King, and Rahul Mazumder, Annals of Statistics,
+#'   as described in "Best subset selection via a modern optimization lens" by
+#'   Dimitris Bertsimas, Angela King, and Rahul Mazumder, Annals of Statistics,
 #'   44(2), 813-852, 2016. This R implementation is based on Matlab code written
 #'   by Rahul Mazumder.
 #' @example examples/ex.fs.R

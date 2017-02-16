@@ -4,7 +4,6 @@ set.seed(0)
 n = 100
 p = 20
 nval = n
-ntest = 10000
 
 # Check for gurobi package
 if (!require("gurobi",quietly=TRUE)) {
@@ -20,10 +19,10 @@ reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=5,nlam=50)
 
 # Run the master simulation function, for two different SNRs 
-sim.obj.hisnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,
-                           seed=0,beta.type=2,s=5,snr=1,verbose=TRUE)
-sim.obj.losnr = sim.master(n,p,nval,ntest,reg.funs=reg.funs,nrep=10,
-                           seed=0,beta.type=2,s=5,snr=0.1,verbose=TRUE)
+sim.obj.hisnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
+                           beta.type=2,s=5,snr=1,verbose=TRUE)
+sim.obj.losnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
+                           beta.type=2,s=5,snr=0.1,verbose=TRUE)
 
 # Print simulation results
 sim.obj.hisnr
@@ -35,5 +34,6 @@ plot(sim.obj.hisnr, method.nums=1:3, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, method.nums=1:3, main="SNR = 0.1", legend.pos="topleft")
 
 # Plot simulation results, including relaxed lasso (it looks a bit crazy)
+par(mfrow=c(1,2))
 plot(sim.obj.hisnr, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, main="SNR = 0.1", legend.pos="topleft")

@@ -1,12 +1,11 @@
 #' Predictors and responses generation.
 #'
 #' Generate a predictor matrix x, and response vector y, following a specified
-#'   setup.  Actually, three pairs of predictors and responses are generated:
-#'   one for training, one for validation, and one for testing.
+#'   setup.  Actually, two pairs of predictors and responses are generated:
+#'   one for training, and one for validation.
 #'
 #' @param n,p The number of training observations, and the number of predictors.
-#' @param nval,ntest The number of validation observations, and the number of
-#'   testing observations.
+#' @param nval The number of validation observations.
 #' @param rho Parameter that drives pairwise correlations of the predictor
 #'   variables; specifically, predictors i and j have population correlation
 #'   rho^abs(i-j). Default is 0.
@@ -21,14 +20,15 @@
 #'   mu is mean and sigma^2 is the error variance. The error variance is set so
 #'   that the given SNR is achieved. Default is 1.
 #'
-#' @return A list with the following components: x, y, xval, yval, xtest, ytest,
-#'   mutest, beta, and sigma.
+#' @return A list with the following components: x, y, xval, yval, Sigma, beta,
+#'   and sigma.
 #' 
-#' @details The predictors are normal with covariance sigma^2 * Sigma, where
-#'   sigma^2 is set according to the desired signal-to-noise ratio, and Sigma
-#'   has (i,j)th entry rho^abs(i-j). The first 4 options for the nonzero pattern
+#' @details The data model is: \eqn{Y \sim N(X\beta, \sigma^2 I)}. 
+#'   The predictor variables have covariance matrix Sigma, with (i,j)th entry
+#'   rho^abs(i-j). The error variance sigma^2 is set according to the desired
+#'   signal-to-noise ratio. The first 4 options for the nonzero pattern
 #'   of the underlying regression coefficients beta follow the simulation setup
-#'   in Bertsimas, King, and Mazumder (2016), and the last is a weak sparsity
+#'   in Bertsimas, King, and Mazumder (2016), and the 5th is a weak sparsity
 #'   option:
 #'   \itemize{
 #'   \item 1: beta has s components of 1, occurring at (roughly) equally-spaced
@@ -49,11 +49,10 @@
 #' @example examples/ex.fs.R
 #' @export sim.xy
 
-sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
+sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1) {
   # Generate predictors
   x = matrix(rnorm(n*p),n,p)
   xval = matrix(rnorm(nval*p),nval,p)
-  xtest = matrix(rnorm(ntest*p),ntest,p)
 
   # Introduce autocorrelation, if needed
   if (rho != 0) {
@@ -63,8 +62,8 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
     Sigma.half = obj$u %*% (sqrt(diag(obj$d))) %*% t(obj$v)
     x = x %*% Sigma.half
     xval = xval %*% Sigma.half
-    xtest = xtest %*% Sigma.half
   }
+  else Sigma = diag(1,p)
 
   # Generate underlying coefficients
   s = min(s,p)
@@ -82,17 +81,15 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
     beta[(s+1):p] = 0.5^(1:(p-s))
   }
 
-  # Set snr based on sample variance on large test set 
-  mutest = as.numeric(xtest %*% beta)
-  vmu = var(mutest) 
+  # Set snr based on sample variance on infinitely large test set 
+  vmu = as.numeric(t(beta) %*% Sigma %*% beta)
   sigma = sqrt(vmu/snr)
 
   # Generate responses
   y = as.numeric(x %*% beta + rnorm(n)*sigma)
   yval = as.numeric(xval %*% beta + rnorm(nval)*sigma)
-  ytest = as.numeric(mutest + rnorm(ntest)*sigma)
  
-  enlist(x,y,xval,yval,xtest,ytest,mutest,beta,sigma)
+  enlist(x,y,xval,yval,Sigma,beta,sigma)
 }
 
 #' Master function for running simulations.
@@ -100,8 +97,7 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #' Run a set of simulations with the specified configuration.
 #'
 #' @param n,p The number of training observations, and the number of predictors.
-#' @param nval,ntest The number of validation observations, and the number of
-#'   testing observations.
+#' @param nval The number of validation observations.
 #' @param reg.funs This is a list of functions, representing the regression
 #'   procedures to be used (evaluated) in the simulation. Each element of the 
 #'   list must be a function that takes x, y (the training predictor matrix and
@@ -117,7 +113,7 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #'   set before repetitions are begun (for reproducibility of the simulation
 #'   results). Default is NULL, which effectively sets no seed.
 #' @param verbose Should intermediate progress be printed out? Default is FALSE.
-#' @param file,file.rep Name of a file to which simulation results are saved
+#' @param file,file.rep Name of a file to which simulation results are saved 
 #'   (using saveRDS), and a number of repetitions after which intermediate
 #'   results are saved. Setting file to NULL is interpreted to mean that no
 #'   simulations results should be saved; setting file.rep to 0 is interpreted
@@ -126,23 +122,23 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #' @param rho,s,beta.type,snr Arguments to pass to \code{\link{sim.xy}}; see the
 #'   latter's help file for details.
 #'
-#' @return A list with components err.train, err.val, err.test, err.rel, risk,
-#'   nzs, opt for the training error, validation error, test error, relative
-#'   test error (test error divided by sigma^2), risk, number of
-#'   selected nonzero coefficients, and optimism (difference in test and
-#'   training errors). These are each lists of length N, where N is the number
-#'   of regression methods under consideration (the length of reg.funs). The
-#'   ith element of each list is then a matrix of dimension nrep x m, where m 
+#' @return A list with components err.train, err.val, err.test, err.rel, prop,
+#'   risk, nzs, opt for the training error, validation error, test error,
+#'   relative test error (test error divided by sigma^2), test proportion of
+#'   variance explained, risk, number of selected nonzero coefficients, and
+#'   relative optimism (difference in test error and training error, divided by
+#'   training error). These are each lists of length N, where N is the number of
+#'   regression methods under consideration (the length of reg.funs). The ith
+#'   element of each list is then a matrix of dimension nrep x m, where m is
 #'   the number of tuning parameters inherent to the ith method. The returned
-#'   components err.train.ave, err.val.ave, err.test.ave, err.rel.ave, risk.ave,
-#'   nzs.ave, opt.ave return the averages of the training error, validation
-#'   error, etc. over the nrep repetitions. Similarly for the components with
-#'   postfixes .std, .med, .mad, which return the standard deviation, median,
-#'   and median absolute deviation, respectively. The returned components with
-#'   postfixes .tun.val and .tun.orc are matrices of dimension N x nrep, which
-#'   return the training error, validation error, etc. when the tuning parameter
-#'   for each regression method in each repetition is chosen by validation
-#'   tuning (best validation error) or by oracle tuning (best test error).
+#'   components err.train.ave, err.val.ave, etc. return the average of the
+#'   training errors, validation errors, etc. over the nrep repetitions.
+#'   Similarly for the components with postfixes .std, .med, .mad, which return
+#'   the standard deviation, median, and median absolute deviation. The returned
+#'   components with postfixes .tun.val and .tun.orc are each lists of length N, 
+#'   which return the appropriate metric when the tuning parameter for each
+#'   regression method in each repetition is chosen by validation tuning (best
+#'   validation error) or by oracle tuning (best test error).
 #'
 #' @seealso \code{\link{sim.xy}}
 #' @author Trevor Hastie, Robert Tibshirani, Ryan Tibshirani
@@ -151,22 +147,23 @@ sim.xy = function(n, p, nval, ntest, rho=0, s=5, beta.type=1, snr=1) {
 #' @example examples/ex.sim.master.R
 #' @export sim.master
 
-sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
-  verbose=FALSE, file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1) {
+sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
+                      file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1) {
   
   this.call = match.call()
   if (!is.null(seed)) set.seed(seed)
-
+  
   N = length(reg.funs)
   reg.names = names(reg.funs)
   if (is.null(reg.names)) reg.names = paste("Method",1:N)
   
-  err.train = err.val = err.test = err.rel = risk = nzs = opt = runtime =
-    vector(mode="list",length=N)
+  err.train = err.val = err.test = err.rel = prop = risk = nzs = opt =
+    runtime = vector(mode="list",length=N)
   names(err.train) = names(err.val) = names(err.test) = names(err.rel) = 
-    names(risk) = names(nzs) = names(opt) = names(runtime) = reg.names
+    names(prop) = names(risk) = names(nzs) = names(opt) = names(runtime) =
+    reg.names
   for (j in 1:N) {
-    err.train[[j]] = err.val[[j]] = err.test[[j]] = err.rel[[j]] =
+    err.train[[j]] = err.val[[j]] = err.test[[j]] = err.rel[[j]] = prop[[j]] =
       risk[[j]] = nzs[[j]] = opt[[j]] = runtime[[j]] = matrix(NA,nrep,1)
   }
   filled = rep(FALSE,N)
@@ -178,8 +175,8 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
       cat("  Generating data ...\n")
     }
     
-    # Generate x, y, xval, yval, xtest, ytest
-    xy.obj = sim.xy(n,p,nval,ntest,rho,s,beta.type,snr)
+    # Generate x, y, xval, yval
+    xy.obj = sim.xy(n,p,nval,rho,s,beta.type,snr)
 
     # Loop through the regression methods
     for (j in 1:N) {
@@ -194,17 +191,16 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
           reg.obj = reg.funs[[j]](xy.obj$x,xy.obj$y)
         })[1]
 
-        # Grab the coefficients, and predicted values on the training,
-        # validation, and testing sets
-        beta = as.matrix(coef(reg.obj))
+        # Grab the estimated coefficients, and the predicted values on the
+        # training and validation sets
+        betahat = as.matrix(coef(reg.obj)); m = ncol(betahat)
         muhat.train = as.matrix(predict(reg.obj,xy.obj$x))
         muhat.val = as.matrix(predict(reg.obj,xy.obj$xval))
-        muhat.test = as.matrix(predict(reg.obj,xy.obj$xtest))
         
         # Populate empty matrices for our metrics, of appropriate dimension
         if (!filled[j]) {
           err.train[[j]] = err.val[[j]] = err.test[[j]] = err.rel[[j]] =
-            risk[[j]] = nzs[[j]] = opt[[j]] = matrix(NA,nrep,ncol(beta))
+            prop[[j]] = risk[[j]] = nzs[[j]] = opt[[j]] = matrix(NA,nrep,m)
           filled[j] = TRUE
           # N.B. Filling with NAs is important, because the filled flag could
           # be false for two reasons: i) we are at the first iteration, or ii)
@@ -214,11 +210,14 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
         # Record all of our metrics
         err.train[[j]][i,] = colMeans((muhat.train - xy.obj$y)^2)
         err.val[[j]][i,] = colMeans((muhat.val - xy.obj$yval)^2)
-        err.test[[j]][i,] = colMeans((muhat.test - xy.obj$ytest)^2)
+        delta = betahat - xy.obj$beta
+        risk[[j]][i,] = diag(t(delta) %*% xy.obj$Sigma %*% delta)
+        err.test[[j]][i,] = risk[[j]][i,] + xy.obj$sigma^2
         err.rel[[j]][i,] = err.test[[j]][i,] / xy.obj$sigma^2
-        risk[[j]][i,] = colMeans((muhat.test - xy.obj$mutest)^2)
-        nzs[[j]][i,] = colSums(beta != 0)
-        opt[[j]][i,] = err.test[[j]][i,] - err.train[[j]][i,]
+        prop[[j]][i,] = 1 - err.rel[[j]][i,] / (1+snr)
+        nzs[[j]][i,] = colSums(betahat != 0)
+        opt[[j]][i,] = (err.test[[j]][i,] - err.train[[j]][i,]) /
+          err.train[[j]][i,]
       }, error = function(err) {
         if (verbose) {
           cat(paste("    Oops! Something went wrong, see error message",
@@ -233,13 +232,13 @@ sim.master = function(n, p, nval, ntest, reg.funs, nrep=50, seed=NULL,
 
     # Save intermediate results?
     if (!is.null(file) && file.rep > 0 && i %% file.rep == 0) {
-      saveRDS(enlist(err.train,err.val,err.test,err.rel,risk,nzs,
-                     opt,runtime),file)
+      saveRDS(enlist(err.train,err.val,err.test,err.rel,prop,risk,nzs,opt,
+                     runtime),file=file)
     }
   }
 
   # Save results now (in case of an error that might occur below)
-  out = enlist(err.train,err.val,err.test,err.rel,risk,nzs,opt,runtime)
+  out = enlist(err.train,err.val,err.test,err.rel,prop,risk,nzs,opt,runtime)
   if (!is.null(file)) saveRDS(out, file)
   
   # Tune according to validation error, and according to test error
@@ -262,10 +261,13 @@ tune.methods = function(obj) {
   N = length(obj$err.val) # Number of methods
   nrep = nrow(obj$err.val[[1]]) # Number of repetitions
   method.names = names(obj$err.val) # Names of methods
-  tun.val = err.rel.tun.val = nzs.tun.val = vector(mode="list",length=N)
-  names(tun.val) = names(err.rel.tun.val) = names(nzs.tun.val) = method.names
+  tun.val = err.rel.tun.val = prop.tun.val = nzs.tun.val =
+    vector(mode="list",length=N)
+  names(tun.val) = names(err.rel.tun.val) = names(prop.tun.val) =
+    names(nzs.tun.val) = method.names
   for (j in 1:N) {
-    tun.val[[j]] = err.rel.tun.val[[j]] = nzs.tun.val[[j]] = matrix(NA,nrep,1)
+    tun.val[[j]] = err.rel.tun.val[[j]] = prop.tun.val[[j]] =
+      nzs.tun.val[[j]] = matrix(NA,nrep,1)
   }
   
   for (i in 1:nrep) {
@@ -274,20 +276,25 @@ tune.methods = function(obj) {
       if (length(tun.val[[j]][i]) == 0) { # Error occurred in rep i
         tun.val[[j]][i] = NA
         err.rel.tun.val[[j]][i] = NA
+        prop.tun.val[[j]][i] = NA
         nzs.tun.val[[j]][i] = NA
       }
       else { # Repetition i was completed as usual
         err.rel.tun.val[[j]][i] = obj$err.rel[[j]][i,tun.val[[j]][i]]
+        prop.tun.val[[j]][i] = obj$prop[[j]][i,tun.val[[j]][i]]
         nzs.tun.val[[j]][i] = obj$nzs[[j]][i,tun.val[[j]][i]]
       }
     }
   }
 
   # Tune second by min test error
-  tun.ora = err.rel.tun.ora = nzs.tun.ora = vector(mode="list",length=N)
-  names(tun.ora) = names(err.rel.tun.ora) = names(nzs.tun.ora) = method.names
+  tun.ora = err.rel.tun.ora = prop.tun.ora = nzs.tun.ora =
+    vector(mode="list",length=N)
+  names(tun.ora) = names(err.rel.tun.ora) = names(prop.tun.ora) =
+    names(nzs.tun.ora) = method.names
   for (j in 1:N) {
-    tun.ora[[j]] = err.rel.tun.ora[[j]] = nzs.tun.ora[[j]] = matrix(NA,nrep,1)
+    tun.ora[[j]] = err.rel.tun.ora[[j]] = prop.tun.ora[[j]] =
+      nzs.tun.ora[[j]] = matrix(NA,nrep,1)
   }
   
   for (j in 1:N) {
@@ -296,17 +303,19 @@ tune.methods = function(obj) {
       if (length(tun.ora[[j]][i]) == 0) { # Error occurred in rep i
         tun.ora[[j]][i] = NA
         err.rel.tun.ora[[j]][i] = NA
+        prop.tun.ora[[j]][i] = NA
         nzs.tun.ora[[j]][i] = NA
       }
       else { # Repetition i was completed as usual
         err.rel.tun.ora[[j]][i] = obj$err.rel[[j]][i,tun.ora[[j]][i]]
+        prop.tun.ora[[j]][i] = obj$prop[[j]][i,tun.ora[[j]][i]]
         nzs.tun.ora[[j]][i] = obj$nzs[[j]][i,tun.ora[[j]][i]]
       }
     }
   }
 
-  return(c(obj,enlist(tun.val,err.rel.tun.val,nzs.tun.val,
-                      tun.ora,err.rel.tun.ora,nzs.tun.ora)))
+  return(c(obj,enlist(tun.val,err.rel.tun.val,prop.tun.val,nzs.tun.val,
+                      tun.ora,err.rel.tun.ora,prop.tun.ora,nzs.tun.ora)))
 }
 
 compute.stats = function(obj) {
