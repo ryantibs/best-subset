@@ -3,7 +3,7 @@ library(bestsubset)
 
 # Set some overall simulation parameters
 n = 100; p = 10 # Size of training set, and number of predictors
-nval = n; ntest = 10000 # Size of validation and testing sets
+nval = n # Size of validation and testing sets
 nrep = 10 # Number of repetitions for a given setting
 seed = 0 # Random number generator seed
 type.vec = c(1:3,5) # Simulation settings to consider
@@ -30,7 +30,7 @@ for (beta.type in type.vec) {
       cat("--------------------------\n")
       cat(paste0("File: ", file, "\n\n"))
       
-      sim.master(n, p, nval, ntest, reg.funs=reg.funs, nrep=nrep, seed=seed,           
+      sim.master(n, p, nval, reg.funs=reg.funs, nrep=nrep, seed=seed,
                  verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
       
       file.list = c(file.list, file)
