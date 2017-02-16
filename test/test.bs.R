@@ -7,6 +7,8 @@ x = matrix(rnorm(n*p),n,p)
 y = rnorm(n)
 
 obj1 = leaps::leaps(x,y,nbest=1)
-obj2 = bestsubset::bs(x,y)
+obj2 = bestsubset::bs(x,y,form=1)
+obj3 = bestsubset::bs(x,y,form=2)
 
 sum(t(obj1$which) != (obj2$beta != 0))
+sum((obj2$beta != 0) != (obj3$beta != 0))

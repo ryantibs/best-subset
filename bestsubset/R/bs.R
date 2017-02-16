@@ -10,8 +10,26 @@
 #'   is 1:min(n,p).
 #' @param intercept Should an intercept be included in the regression model? 
 #'   Default is TRUE.
-#' @param verbose Should intermediate progress be printed out? Default is FALSE.
-#'  
+#' @param form Either of 1 or 2, specifying the formulation to use for best
+#'   subset solution as a mixed integer quadratic program. Formulations 1 and 2
+#'   correspond to equations (2.5) and (2.6) in Bertsimas, King, and Mazumder
+#'   (2016), see references below. Default is 1 if n >= p, and 2 if n < p.
+#' @param time.limit The maximum amount of time (in seconds) to allow Gurobi to
+#'   compute the subset selection solution at each value of k. Default is 100.
+#' @param nruns The number of runs of projected gradient descent to use, where
+#'   each run begins at a random initialization for the coefficients. The best
+#'   estimate over all these runs (achieving the lowest criterion value) is 
+#'   passed to Gurobi as a warm start. Default is 50.
+#' @param maxiter The maximum number of iterations for each run of projected
+#'   gradient descent. Default is 1000.
+#' @param tol The tolerance for the relative difference in coefficients between
+#'   iterations of projected gradient descent (the algorithm terminates when the
+#'   relative difference is less than the specified tolerance). Default is 1e-4.
+#' @param polish Should the project gradient descent algorithm replace the
+#'   estimate at each iteration by the least squares solution on the active set?
+#'   Default is TRUE.
+#' @param Should intermediate progress be printed out? Default is FALSE.
+#' 
 #' @return A list with the following components: 
 #'   \itemize{
 #'   \item beta: matrix of regression coefficients, one column per sparsity
@@ -25,14 +43,17 @@
 #'   }
 #'
 #' @details This function solves best subset selection program:
-#'   \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;{\rm s.t.}\;\;
-#'     \|\beta\|_0 \leq k}
-#'   for a response vector \eqn{Y} and predictor matrix \eqn{X}. It uses
-#'   projected gradient descent to find an approximate solution to the
-#'   above nonconvex program, and then calls Gurobi's MIO (mixed integer
-#'   optimization) solver with this approximate solution as a warm start.
-#'   See references below for the paper by Bertsimas, King, and Mazumder
-#'   (2016), that describes this algorithm.
+#'   \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;{\rm s.t.}\;\; \|\beta\|_0 \leq k}
+#'   for a response vector \eqn{Y} and predictor matrix \eqn{X}. It follows the
+#'   algorithm suggested by Bertismas, King, and Mazumder (2016) (see below for
+#'   for the full reference): it first uses projected gradient descent to find
+#'   an approximate solution to the above nonconvex program, and then calls
+#'   Gurobi's MIO (mixed integer optimization) solver with this approximate
+#'   solution as a warm start.
+#'   There are two options for how to formulate best subset selection as a mixed
+#'   integer quadratic program, one recommended when n >= p, and the other when
+#'   n < p. They correspond to equations (2.5) and (2.6) in the paper by 
+#'   Bertismas, King, and Mazumder (2016), respectively.
 #' 
 #' @author Ryan Tibshirani 
 #' @references This function utilizes the MIO formulation for subset selection
@@ -43,8 +64,9 @@
 #' @example examples/ex.fs.R
 #' @export bs
 
-bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
-              nruns=50, maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
+bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
+              form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
+              maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
   
   # Check for Matrix package
   if (!require("Matrix",quietly=TRUE)) {
@@ -99,8 +121,8 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
       cat(sprintf("\n%i. Solving best subset selection with k=%i.",i,k[i]))
     }
     
-    bs.obj = bs.one.k(x,y,k[i],xtx,time.limit=time.limit,beta0=beta0,L=L,
-                      nruns=nruns,maxiter=maxiter,tol=tol,polish=polish,
+    bs.obj = bs.one.k(x,y,k[i],xtx,form=form,time.limit=time.limit,beta0=beta0,
+                      L=L,nruns=nruns,maxiter=maxiter,tol=tol,polish=polish,
                       verbose=verbose)
     beta[,i] = bs.obj$beta
     status[i] = bs.obj$status
@@ -118,8 +140,9 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE, time.limit=100,
 }
 
 # @export
-bs.one.k = function(x, y, k, xtx, time.limit=100, nruns=50, maxiter=1000,
-                    tol=1e-4, polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {       
+bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
+                    time.limit=100, nruns=50, maxiter=1000, tol=1e-4,
+                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {       
   n = nrow(x)
   p = ncol(x)
   
@@ -128,7 +151,7 @@ bs.one.k = function(x, y, k, xtx, time.limit=100, nruns=50, maxiter=1000,
                            polish=polish,L=L,verbose=verbose)
   bigm = 2*max(abs(best.beta))
   zvec = as.numeric(best.beta != 0)
-
+  
   # Set up and run the MIO solver from Gurobi. The general form is
   #   min         x^T Q x + c^T x
   #   subject to  Ax <= b
@@ -137,21 +160,39 @@ bs.one.k = function(x, y, k, xtx, time.limit=100, nruns=50, maxiter=1000,
   if (verbose) cat("\n  b. Running Gurobi's mixed integer program solver ... ")
   I = Diagonal(p,1)
   model = list()
-  rvec =  c(rep(0,p), rep(1,p))
-  model$A = suppressMessages(rbind(cbind(I, -bigm*I), cbind(-I, -bigm*I), rvec))
-  model$sense = c(rep("<=",2*p),"=")       # The constraints between Ax and b
-  model$rhs = c(rep(0,2*p),k)              # The vector b
-  model$ub = c(rep(bigm,p), rep(1,p)) 
-  model$lb = c(rep(-bigm,p), rep(0,p))
-  model$obj = c(-2*t(x)%*%y, rep(0,p))     # The vector c in the objective
-  model$Q = bdiag(xtx, Matrix(0,p,p))
-  model$vtypes = c(rep("C",p), rep("B",p)) # Variable type: continuous or binary
-  model$start = c(best.beta, zvec)         # Warm start, best proj gradient run
-  
+
+  if (form==1) {
+    rvec = c(rep(0,p), rep(1,p))
+    model$A = suppressMessages(
+      rbind(cbind(I,-bigm*I), cbind(-I,-bigm*I), rvec))
+    model$sense = rep("<=",2*p+1)            # Ineq or eq between Ax and b?
+    model$rhs = c(rep(0,2*p), k)             # The vector b
+    model$ub = c(rep(bigm,p), rep(1,p)) 
+    model$lb = c(rep(-bigm,p), rep(0,p))
+    model$obj = c(-2*t(x)%*%y, rep(0,p))     # The vector c in the objective
+    model$Q = bdiag(xtx, Matrix(0,p,p))
+    model$vtypes = c(rep("C",p), rep("B",p)) # Variable type: cont or binary
+    model$start = c(best.beta, zvec)         # Warm start from proj gradient
+  }
+  else {
+    rvec = c(rep(0,p), rep(1,p), rep(0,n))
+    model$A = suppressMessages(
+      rbind(cbind(I,-bigm*I,Matrix(0,p,n)), cbind(-I,-bigm*I,Matrix(0,p,n)),
+            rvec, cbind(x, Matrix(0,n,p), -Diagonal(n,1))))
+    model$sense = c(rep("<=",2*p+1), rep("=",n)) # Ineq or eq between Ax and b?
+    model$rhs = c(rep(0,2*p), k, rep(0,n))       # The vector b
+    zeta.bd = max(colSums(apply(abs(x),2,sort,decreasing=TRUE)[1:k,,drop=F]))
+    model$ub = c(rep(bigm,p), rep(1,p), rep(zeta.bd,n))
+    model$lb = c(rep(-bigm,p), rep(0,p), rep(-zeta.bd,n))
+    model$obj = c(-2*t(x)%*%y, rep(0,p+n))       # The vector c in the objective
+    model$Q = bdiag(Matrix(0,2*p,2*p), Diagonal(n,1))
+    model$vtypes = c(rep("C",p), rep("B",p), rep("C",n)) # Variable type
+    model$start = c(best.beta, zvec, x%*%best.beta)      # Warm start 
+  }
+
   params = list()
   if (!is.null(time.limit)) params$TimeLimit = time.limit
   gur.obj = quiet(gurobi(model,params))
-
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
   
   return(list(beta=gur.obj$x[1:p], status=gur.obj$status))

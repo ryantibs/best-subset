@@ -4,9 +4,9 @@
 \alias{bs}
 \title{Best subset selection.}
 \usage{
-bs(x, y, k = 1:min(nrow(x), ncol(x)), intercept = TRUE, time.limit = 100,
-  nruns = 50, maxiter = 1000, tol = 1e-04, polish = TRUE,
-  verbose = FALSE)
+bs(x, y, k = 1:min(nrow(x), ncol(x)), intercept = TRUE,
+  form = ifelse(nrow(x) < ncol(x), 2, 1), time.limit = 100, nruns = 50,
+  maxiter = 1000, tol = 1e-04, polish = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{x}{Matrix of predictors, of dimension (say) n x p.}
@@ -21,7 +21,31 @@ is 1:min(n,p).}
 \item{intercept}{Should an intercept be included in the regression model? 
 Default is TRUE.}
 
-\item{verbose}{Should intermediate progress be printed out? Default is FALSE.}
+\item{form}{Either of 1 or 2, specifying the formulation to use for best
+subset solution as a mixed integer quadratic program. Formulations 1 and 2
+correspond to equations (2.5) and (2.6) in Bertsimas, King, and Mazumder
+(2016), see references below. Default is 1 if n >= p, and 2 if n < p.}
+
+\item{time.limit}{The maximum amount of time (in seconds) to allow Gurobi to
+compute the subset selection solution at each value of k. Default is 100.}
+
+\item{nruns}{The number of runs of projected gradient descent to use, where
+each run begins at a random initialization for the coefficients. The best
+estimate over all these runs (achieving the lowest criterion value) is 
+passed to Gurobi as a warm start. Default is 50.}
+
+\item{maxiter}{The maximum number of iterations for each run of projected
+gradient descent. Default is 1000.}
+
+\item{tol}{The tolerance for the relative difference in coefficients between
+iterations of projected gradient descent (the algorithm terminates when the
+relative difference is less than the specified tolerance). Default is 1e-4.}
+
+\item{polish}{Should the project gradient descent algorithm replace the
+estimate at each iteration by the least squares solution on the active set?
+Default is TRUE.}
+
+\item{Should}{intermediate progress be printed out? Default is FALSE.}
 }
 \value{
 A list with the following components: 
@@ -41,14 +65,17 @@ Compute best subset selection solutions.
 }
 \details{
 This function solves best subset selection program:
-  \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;{\rm s.t.}\;\;
-    \|\beta\|_0 \leq k}
-  for a response vector \eqn{Y} and predictor matrix \eqn{X}. It uses
-  projected gradient descent to find an approximate solution to the
-  above nonconvex program, and then calls Gurobi's MIO (mixed integer
-  optimization) solver with this approximate solution as a warm start.
-  See references below for the paper by Bertsimas, King, and Mazumder
-  (2016), that describes this algorithm.
+  \deqn{\min_\beta \|Y - X \beta\|_2^2 \;\;{\rm s.t.}\;\; \|\beta\|_0 \leq k}
+  for a response vector \eqn{Y} and predictor matrix \eqn{X}. It follows the
+  algorithm suggested by Bertismas, King, and Mazumder (2016) (see below for
+  for the full reference): it first uses projected gradient descent to find
+  an approximate solution to the above nonconvex program, and then calls
+  Gurobi's MIO (mixed integer optimization) solver with this approximate
+  solution as a warm start.
+  There are two options for how to formulate best subset selection as a mixed
+  integer quadratic program, one recommended when n >= p, and the other when
+  n < p. They correspond to equations (2.5) and (2.6) in the paper by 
+  Bertismas, King, and Mazumder (2016), respectively.
 }
 \examples{
 # Simulate some simple regression data with the first 5 coefficients
