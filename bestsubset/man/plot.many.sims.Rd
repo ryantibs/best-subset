@@ -8,8 +8,8 @@
   method.names = NULL, what = c("error", "prop", "nonzero"),
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
   fig.dir = ".", file.name = NULL, w = 6, h = 6, mar = NULL,
-  cols = 1:8, main = NULL, cex.main = 1.25, log = "x",
-  legend.pos = "bottomright", tex.dir = NULL)
+  cols = 1:8, main = NULL, cex.main = 1.25, log = ifelse(what == "prop",
+  "", "x"), legend.pos = "bottomright", tex.dir = NULL)
 }
 \arguments{
 \item{file.list}{vector of strings that point to saved sim objects (each

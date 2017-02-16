@@ -48,7 +48,8 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
                           method.names=NULL, what=c("error","prop","nonzero"),
                           tuning=c("validation","oracle"), type=c("ave","med"),
                           std=TRUE, fig.dir=".", file.name=NULL, w=6, h=6,
-                          mar=NULL, cols=1:8, main=NULL, cex.main=1.25, log="x",
+                          mar=NULL, cols=1:8, main=NULL, cex.main=1.25,
+                          log=ifelse(what=="prop","","x"),
                           legend.pos="bottomright", tex.dir=NULL) {
 
   what = match.arg(what)

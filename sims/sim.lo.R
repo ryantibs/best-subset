@@ -53,23 +53,17 @@ library(bestsubset)
 load(file="rds/sim.n100.p10.rda")
 
 # Validation tuning
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",
-               tuning="val", fig.dir="fig/val", file.name=file.name,
-               main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro",
-               tuning="val", fig.dir="fig/val", file.name=file.name,
-               main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",
-               tuning="val", fig.dir="fig/val", file.name=file.name,
-               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",  tuning="val",
+               fig.dir="fig/val", file.name=file.name, main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro", tuning="val",
+               fig.dir="fig/val", file.name=file.name, main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",  tuning="val",
+               fig.dir="fig/val", file.name=file.name, main=main, tex.dir="tex")
 
 # Oracle tuning
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",
-               tuning="ora", fig.dir="fig/ora", file.name=file.name,
-               main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro",
-               tuning="ora", fig.dir="fig/ora", file.name=file.name,
-               main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",
-               tuning="ora", fig.dir="fig/ora", file.name=file.name,
-               main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err", tuning="ora",
+               fig.dir="fig/ora", file.name=file.name, main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="pro", tuning="ora",
+               fig.dir="fig/ora", file.name=file.name, main=main, tex.dir="tex")
+plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non", tuning="ora",
+               fig.dir="fig/ora", file.name=file.name, main=main, tex.dir="tex")
