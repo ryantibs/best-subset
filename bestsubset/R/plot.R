@@ -75,8 +75,8 @@ plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
   }
   else if (what=="prop") {
     xvar = snr.vec/(1+snr.vec)
-    xlab = "Population signal-to-noise ratio"
-    ylab = "Test signal-to-noise ratio"
+    xlab = "Population proportion of var explained"
+    ylab = "Test proportion of var explained"
   }
   else {
     xvar = snr.vec
