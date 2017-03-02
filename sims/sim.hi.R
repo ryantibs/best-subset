@@ -15,9 +15,10 @@ stem = paste0("sim.n",n,".p",p)
 reg.funs = list()
 reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
 reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE,max=50)
-reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=1:50,form=2)
-reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nrelax=10,
-                                                  nlam=50)
+reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=1:50,
+                                             time.limit=3600,form=2)
+reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
+                                                  nrelax=10,nlam=50)
 
 file.list = c() # Vector of files for the saved rds files
 file.name = c() # Vector of file names for the plots 
