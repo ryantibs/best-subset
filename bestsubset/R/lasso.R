@@ -82,7 +82,7 @@ coef.lasso.from.glmnet = function(object, s=NULL) {
   else {
     min.lam = min(object$lambda)
     max.lam = max(object$lambda)
-    svec = log(seq(exp(max.lam),exp(min.lam),length=object$nlambda))
+    svec = exp(seq(log(max.lam),log(min.lam),length=object$nlambda))
     return(glmnet::coef.glmnet(object,s=svec))
     # RJT TODO: should we used exact=TRUE above? Requires additional
     # arguments to match the initial call to glmnet(), kind of clunky
