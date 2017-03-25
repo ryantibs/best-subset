@@ -1,0 +1,18 @@
+bestsubset-package      Simulations for best subset selection in
+                        regression
+bs                      Best subset selection.
+coef.bs                 Coefficient function for bs object.
+coef.fs                 Coefficient function for fs object.
+coef.lasso              Coef function for lasso object.
+fs                      Forward stepwise regression.
+lasso                   Lasso and friends.
+plot.many.sims          Plot the results over several simulation
+                        settings.
+plot.sim                Plot function for sim object.
+predict.bs              Predict function for bs object.
+predict.fs              Predict function for fs object.
+predict.lasso           Predict function for lasso object.
+print.sim               Print function for sim object.
+print.tex               Print function for latex-style tables.
+sim.master              Master function for running simulations.
+sim.xy                  Predictors and responses generation.

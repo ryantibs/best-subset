@@ -1,0 +1,17 @@
+bestsubset-package	bestsubset-package
+bestsubset	bestsubset-package
+bs	bs
+coef.bs	coef.bs
+coef.fs	coef.fs
+coef.lasso	coef.lasso
+fs	fs
+lasso	lasso
+plot.many.sims	plot.many.sims
+plot.sim	plot.sim
+predict.bs	predict.bs
+predict.fs	predict.fs
+predict.lasso	predict.lasso
+print.sim	print.sim
+print.tex	print.tex
+sim.master	sim.master
+sim.xy	sim.xy

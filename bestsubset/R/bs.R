@@ -8,7 +8,7 @@
 #'   subset regression model; can be a vector, in which case the best subset
 #'   selection problem is solved for every value of the sparsity level. Default
 #'   is 1:min(n,p).
-#' @param intercept Should an intercept be included in the regression model? 
+#' @param intercept Should an intercept be included in the regression model?
 #'   Default is TRUE.
 #' @param form Either of 1 or 2, specifying the formulation to use for best
 #'   subset solution as a mixed integer quadratic program. Formulations 1 and 2
@@ -18,7 +18,7 @@
 #'   compute the subset selection solution at each value of k. Default is 100.
 #' @param nruns The number of runs of projected gradient descent to use, where
 #'   each run begins at a random initialization for the coefficients. The best
-#'   estimate over all these runs (achieving the lowest criterion value) is 
+#'   estimate over all these runs (achieving the lowest criterion value) is
 #'   passed to Gurobi as a warm start. Default is 50.
 #' @param maxiter The maximum number of iterations for each run of projected
 #'   gradient descent. Default is 1000.
@@ -29,8 +29,8 @@
 #'   estimate at each iteration by the least squares solution on the active set?
 #'   Default is TRUE.
 #' @param Should intermediate progress be printed out? Default is FALSE.
-#' 
-#' @return A list with the following components: 
+#'
+#' @return A list with the following components:
 #'   \itemize{
 #'   \item beta: matrix of regression coefficients, one column per sparsity
 #'     level
@@ -52,10 +52,10 @@
 #'   solution as a warm start.
 #'   There are two options for how to formulate best subset selection as a mixed
 #'   integer quadratic program, one recommended when n >= p, and the other when
-#'   n < p. They correspond to equations (2.5) and (2.6) in the paper by 
+#'   n < p. They correspond to equations (2.5) and (2.6) in the paper by
 #'   Bertismas, King, and Mazumder (2016), respectively.
-#' 
-#' @author Ryan Tibshirani 
+#'
+#' @author Ryan Tibshirani
 #' @references This function utilizes the MIO formulation for subset selection
 #'   as described in "Best subset selection via a modern optimization lens" by
 #'   Dimitris Bertsimas, Angela King, and Rahul Mazumder, Annals of Statistics,
@@ -67,29 +67,29 @@
 bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
               form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
               maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
-  
+
   # Check for Matrix package
   if (!require("Matrix",quietly=TRUE)) {
     stop("Package Matrix not installed (required here)!")
   }
   # Check for gurobi package
   if (!require("gurobi",quietly=TRUE)) {
-    stop("Package Matrix not installed (required here)!")
+    stop("Package gurobi not installed (required here)!")
   }
-  
+
   # Set up data
   x = as.matrix(x)
   y = as.numeric(y)
   n = nrow(x)
   p = ncol(x)
-  
+
   # Check input data
   check.xy(x=x,y=y)
 
   # Save original x and y
   x0 = x
   y0 = y
-  
+
   # Center and scale, etc.
   obj = standardize(x,y,intercept,FALSE)
   x = obj$x
@@ -114,13 +114,13 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
   nk = length(k)
   beta = matrix(0,p,nk)
   status = rep("",nk)
-  
+
   # Iterate over k vector
   for (i in 1:nk) {
     if (verbose) {
       cat(sprintf("\n%i. Solving best subset selection with k=%i.",i,k[i]))
     }
-    
+
     bs.obj = bs.one.k(x,y,k[i],xtx,form=form,time.limit=time.limit,beta0=beta0,
                       L=L,nruns=nruns,maxiter=maxiter,tol=tol,polish=polish,
                       verbose=verbose)
@@ -129,7 +129,7 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
     beta0 = bs.obj$beta # Use as a warm start for the next value of k
   }
   if (verbose) cat("\n")
-  
+
   # Assign column names
   colnames(beta) = as.character(k)
 
@@ -142,16 +142,16 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
 # @export
 bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
                     time.limit=100, nruns=50, maxiter=1000, tol=1e-4,
-                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {       
+                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {
   n = nrow(x)
   p = ncol(x)
-  
+
   # Run the projected gradient method, gather some info from it
   best.beta = bs.proj.grad(x,y,k,nruns=nruns,maxiter=maxiter,tol=tol,
                            polish=polish,L=L,verbose=verbose)
   bigm = 2*max(abs(best.beta))
   zvec = as.numeric(best.beta != 0)
-  
+
   # Set up and run the MIO solver from Gurobi. The general form is
   #   min         x^T Q x + c^T x
   #   subject to  Ax <= b
@@ -167,7 +167,7 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
       rbind(cbind(I,-bigm*I), cbind(-I,-bigm*I), rvec))
     model$sense = rep("<=",2*p+1)            # Ineq or eq between Ax and b?
     model$rhs = c(rep(0,2*p), k)             # The vector b
-    model$ub = c(rep(bigm,p), rep(1,p)) 
+    model$ub = c(rep(bigm,p), rep(1,p))
     model$lb = c(rep(-bigm,p), rep(0,p))
     model$obj = c(-2*t(x)%*%y, rep(0,p))     # The vector c in the objective
     model$Q = bdiag(xtx, Matrix(0,p,p))
@@ -187,14 +187,14 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
     model$obj = c(-2*t(x)%*%y, rep(0,p+n))       # The vector c in the objective
     model$Q = bdiag(Matrix(0,2*p,2*p), Diagonal(n,1))
     model$vtypes = c(rep("C",p), rep("B",p), rep("C",n)) # Variable type
-    model$start = c(best.beta, zvec, x%*%best.beta)      # Warm start 
+    model$start = c(best.beta, zvec, x%*%best.beta)      # Warm start
   }
 
   params = list()
   if (!is.null(time.limit)) params$TimeLimit = time.limit
   gur.obj = quiet(gurobi(model,params))
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
-  
+
   return(list(beta=gur.obj$x[1:p], status=gur.obj$status))
 }
 
@@ -202,20 +202,20 @@ bs.proj.grad = function(x, y, k, nruns=50, maxiter=1000, tol=1e-4, polish=TRUE,
                         beta0=NULL, L=NULL, verbose=FALSE) {
   n = nrow(x)
   p = ncol(x)
-  
-  # If beta0 is NULL, use thresholded least squares coefficients when p < n, 
+
+  # If beta0 is NULL, use thresholded least squares coefficients when p < n,
   # and thresholded marginal regression coefficients when p >= n
   if (is.null(beta0)) {
     if (p < n) beta0 = lsfit(x,y,int=FALSE)$coef
     else beta0 = t(x)%*%y/colSums(x^2)
     ids = order(abs(beta0), decreasing=TRUE)
-    beta0[-ids[1:k]] = 0 
+    beta0[-ids[1:k]] = 0
   }
 
   # If L is NULL, use the power method to approximate the largest eigenvalue
   # of X^T X, for the step size
   if (is.null(L)) L = power.method(crossprod(x))$val
-  
+
   beta.beta = beta0
   best.crit = Inf
   beta = beta0
@@ -225,7 +225,7 @@ bs.proj.grad = function(x, y, k, nruns=50, maxiter=1000, tol=1e-4, polish=TRUE,
     if (verbose && (r==1 || r %% 10 ==0)) cat(sprintf("%s ... ",r))
     for (i in 1:maxiter) {
       beta.old = beta
-      
+
       # Take gradient descent step
       grad = -t(x) %*% (y - x %*% beta)
       beta = beta - grad/L
@@ -236,31 +236,31 @@ bs.proj.grad = function(x, y, k, nruns=50, maxiter=1000, tol=1e-4, polish=TRUE,
 
       # Perform least squares polishing, if we are asked to
       if (polish) beta[ids[1:k]] = lsfit(x[,ids[1:k]],y,int=FALSE)$coef
-      
+
       # Stop if the relative difference in coefficients is small enough
-      if (norm(beta - beta.old) / max(norm(beta),1) < tol) break 
+      if (norm(beta - beta.old) / max(norm(beta),1) < tol) break
     }
 
-    # Compute the criterion for the current coefficients, compare to the 
+    # Compute the criterion for the current coefficients, compare to the
     # best so far
     cur.crit = sum((y - x%*%beta)^2)
     if (cur.crit < best.crit) best.beta = beta
-    
-    # Start the next run off at a random spot (particular choice matches 
+
+    # Start the next run off at a random spot (particular choice matches
     # Rahul's Matlab code)
     beta = beta0 + 2*runif(p)*max(abs(beta0),1)
   }
-  
+
   return(best.beta)
 }
 
 ##############################
 
-quiet = function(x) { 
-  sink(tempfile()) 
-  on.exit(sink()) 
-  invisible(force(x)) 
-} 
+quiet = function(x) {
+  sink(tempfile())
+  on.exit(sink())
+  invisible(force(x))
+}
 
 power.method = function(A, maxiter=100) {
   b = rnorm(ncol(A))
@@ -280,21 +280,21 @@ norm = function(v) return(sqrt(sum(v^2)))
 #' Compute coefficients at a particular sparsity level of the best subset
 #'   selection model.
 #'
-#' @param object The bs object, as produced by the bs function. 
+#' @param object The bs object, as produced by the bs function.
 #' @param s The sparsity level (or vector of sparsity levels) at which
 #'   coefficients should be computed. If missing, then the default is use
 #'   all sparsity levels of the passed bs object.
 #' @param ... Other arguments (currently not used).
 #'
 #' @export coef.bs
-#' @export 
+#' @export
 
 coef.bs = function(object, s, ...) {
   if (missing(s)) s = object$k
   else if (any(!(s %in% object$k))) {
     stop(sprintf("s must be a subset of object$k."))
   }
-  return(object$beta[,s])           
+  return(object$beta[,s])
 }
 
 #' Predict function for bs object.
@@ -311,7 +311,7 @@ coef.bs = function(object, s, ...) {
 #' @param ... Other arguments (currently not used).
 #'
 #' @export predict.bs
-#' @export 
+#' @export
 
 predict.bs = function(object, newx, s, ...) {
   beta = coef.bs(object,s)
@@ -328,10 +328,10 @@ predict.bs = function(object, newx, s, ...) {
 # Interpolation function to get coefficients
 
 coef.interpolate = function(beta, s, knots, decreasing=TRUE) {
-  # Sort the s values 
+  # Sort the s values
   o = order(s,decreasing=decreasing)
   s = s[o]
-        
+
   k = length(s)
   mat = matrix(rep(knots,each=k),nrow=k)
   if (decreasing) b = s >= mat
@@ -343,7 +343,7 @@ coef.interpolate = function(beta, s, knots, decreasing=TRUE) {
   p = numeric(k)
   p[i] = 0
   p[!i] = ((s-knots[blo])/(knots[bhi]-knots[blo]))[!i]
-  
+
   beta = t((1-p)*t(beta[,blo,drop=FALSE]) + p*t(beta[,bhi,drop=FALSE]))
   colnames(beta) = as.character(round(s,3))
   rownames(beta) = NULL

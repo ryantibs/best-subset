@@ -8,9 +8,9 @@
 #'   of interpolations counts the endpoints inclusively, i.e., the lasso and
 #'   least squares solutions.) Default is 1, which means that only the lasso
 #'   solution is considered (no strict relaxations), at each value of lambda.
-#' 
+#'
 #' @description This is just a simple wrapper function around the
-#'   \code{\link{glmnet}} function in the R package of the same name. Its 
+#'   \code{\link{glmnet}} function in the R package of the same name. Its
 #'   purpose is twofold: (i) to provide functionality where the associated coef
 #'   and predict methods always produce coefficients and predictions at exactly
 #'   nlambda values, by default (the \code{\link{glmnet}} function may produce a
@@ -32,17 +32,16 @@ lasso = function(x, y, alpha=1, nrelax=1, nlambda=50,
   if (!require("glmnet",quietly=TRUE)) {
     stop("Package glmnet not installed (required here)!")
   }
-  
+    n=nrow(x);p=ncol(x);dfmax=p
+    if(( nrelax>1) & (n<(p-intercept))){
+        dfmax=n-intercept
+    }#this sometimes still returns too many!
   # Reset nlambda if a specific lambda sequence is passed
   if (!is.null(lambda)) nlambda = length(lambda)
-
   # Run glmnet
-  obj = glmnet(x,y,alpha=alpha,nlambda=nlambda,
-               lambda.min.ratio=lambda.min.ratio,
-               lambda=lambda,intercept=intercept,
-               standardize=standardize)
-
-  # Append a few things to the returned object
+    obj = glmnet(x, y, alpha = alpha, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio,dfmax=dfmax,
+                 lambda = lambda, intercept = intercept, standardize = standardize)
+    ## Append a few things to the returned object
   obj$nrelax = nrelax
   obj$nlambda = nlambda
   obj$intercept = intercept
@@ -56,13 +55,13 @@ lasso = function(x, y, alpha=1, nrelax=1, nlambda=50,
 #' @export
 
 coef.lasso = function(object, s=NULL) {
-  coef.lasso.with.intercept(object,s)[-1,]
+  coef.lasso.with.intercept(object,s)
 }
 
 coef.lasso.with.intercept = function(object, s=NULL) {
   beta.lasso = coef.lasso.from.glmnet(object,s)
   if (object$nrelax == 1) return(beta.lasso)
-  
+
   beta.ls = coef.ls.with.intercept(beta.lasso,object$x,object$y)
   gamma = seq(1,0,length=object$nrelax)
   beta.left = matrix(apply(beta.lasso,2,function(b){b%o%gamma}),
@@ -82,20 +81,24 @@ coef.lasso.from.glmnet = function(object, s=NULL) {
   else {
     min.lam = min(object$lambda)
     max.lam = max(object$lambda)
-    svec = log(seq(exp(max.lam),exp(min.lam),length=object$nlambda))
+    svec = exp(seq(log(max.lam),log(min.lam),length=object$nlambda))#TH you had exp and log in wrong order!
     return(glmnet::coef.glmnet(object,s=svec))
-    # RJT TODO: should we used exact=TRUE above? Requires additional
-    # arguments to match the initial call to glmnet(), kind of clunky
+    ## RJT TODO: should we used exact=TRUE above? Requires additional
+    ## arguments to match the initial call to glmnet(), kind of clunky
+    ## TH use glmnet.control(fdev=0) at beginning of session
+    ## Still needed though for cases when df exceeds p (can happen with glmnet, and bad for relaxed lasso)
   }
 }
 
 coef.ls.with.intercept = function(beta, x, y) {
-  p = ncol(x)
+  p = ncol(x);n=nrow(x)
   apply(beta, 2, function(b) {
-    act.set = which(b[-1] != 0)
-    if (length(act.set)==0) return(c(b[1],rep(0,p)))
-    b.new = rep(0,p+1)
-    if (b[1]!=0) b.new[c(1,act.set)] = lsfit(x[,act.set],y)$coef
+      act.set = which(b[-1] != 0)
+      intercept=b[1]!=0
+      if (length(act.set)==0) return(c(b[1],rep(0,p)))
+      if(length(act.set)>(n-intercept))act.set=act.set[seq(n-intercept)]# which ones dont matter
+      b.new = rep(0,p+1)
+    if (intercept) b.new[c(1,act.set)] = lsfit(x[,act.set],y)$coef
     else b.new[1+act.set] = lsfit(x[,act.set],y,int=FALSE)$coef
     return(b.new)
   })
@@ -103,9 +106,9 @@ coef.ls.with.intercept = function(beta, x, y) {
 
 #' Predict function for lasso object.
 #' @export predict.lasso
-#' @export 
+#' @export
 
 predict.lasso = function(object, newx, s=NULL) {
-  cbind(rep(1,ncol(newx)),newx) %*% coef.lasso.with.intercept(object,s)
+  cbind(rep(1,nrow(newx)),newx) %*% coef.lasso.with.intercept(object,s)
 }
 

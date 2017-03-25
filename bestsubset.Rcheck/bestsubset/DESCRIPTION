@@ -1,8 +1,8 @@
 Package: bestsubset
 Type: Package
 Title: Tools for best subset selection in regression
-Version: 1.0.1
-Date: 2016-03-24
+Version: 1.0.0
+Date: 2016-01-20
 Author: Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 Maintainer: Ryan Tibshirani <ryantibs@stat.cmu.edu>
 Depends: glmnet, gurobi
@@ -13,3 +13,4 @@ Description: An implementation of best subset selection in regression based on a
   estimators such as the lasso and forward stepwise.
 License: GPL-2
 RoxygenNote: 5.0.1
+Built: R 3.3.1; x86_64-apple-darwin13.4.0; 2017-03-08 02:49:03 UTC; unix

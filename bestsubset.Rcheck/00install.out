@@ -1,0 +1,19 @@
+Loading required package: devtools
+Loading required package: knitr
+Loading required package: rmarkdown
+* installing *source* package ‘bestsubset’ ...
+** libs
+make: Nothing to be done for `all'.
+installing to /Users/hastie/GITHUB/best-subset/bestsubset.Rcheck/bestsubset/libs
+** R
+** preparing package for lazy loading
+Warning: package ‘slam’ was built under R version 3.3.2
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+Loading required package: devtools
+Loading required package: knitr
+Loading required package: rmarkdown
+Warning: package ‘slam’ was built under R version 3.3.2
+* DONE (bestsubset)
