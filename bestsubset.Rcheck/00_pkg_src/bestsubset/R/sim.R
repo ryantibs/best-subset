@@ -19,7 +19,7 @@
 #' @param snr Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
 #'   mu is mean and sigma^2 is the error variance. The error variance is set so
 #'   that the given SNR is achieved. Default is 1.
-#' @param reorder Reorder the variables at random to avoid any bias. Default is FALSE.
+#' @param reorder Reorder the variables at random to avoid any bias. Default is FALSE
 #' @return A list with the following components: x, y, xval, yval, Sigma, beta,
 #'   and sigma.
 #'
@@ -49,7 +49,7 @@
 #' @example examples/ex.fs.R
 #' @export sim.xy
 
-sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
+sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1,reorder=FALSE) {
   # Generate predictors
   x = matrix(rnorm(n*p),n,p)
   xval = matrix(rnorm(nval*p),nval,p)

@@ -74,7 +74,7 @@ ive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/inconsolata/ts1fi4.fd)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 237--243
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 238--244
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -83,12 +83,12 @@ Inference\T1/ptm/m/n/10 ,
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [6]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [7]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [8]
-Overfull \hbox (18.13756pt too wide) in paragraph at lines 507--509
+Overfull \hbox (18.13756pt too wide) in paragraph at lines 508--510
 []\T1/ptm/m/n/10 the in-dices of the meth-ods that should be plot-ted. De-fault
  is to 1:length(x$err.rel.ave),
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [9]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 596--602
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 597--603
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -121,7 +121,7 @@ dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw
 /times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utm
 ri8a.pfb>
-Output written on Rd2.pdf (15 pages, 136880 bytes).
+Output written on Rd2.pdf (15 pages, 137048 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.15 [TeX Live 2013] (kpathsea + Thai support).
 Scanning input file Rd2.idx....done (25 entries accepted, 0 rejected).
@@ -203,7 +203,7 @@ ive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/inconsolata/ts1fi4.fd)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [4]
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 237--243
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 238--244
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -212,12 +212,12 @@ Inference\T1/ptm/m/n/10 ,
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [7]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [8]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
-Overfull \hbox (18.13756pt too wide) in paragraph at lines 507--509
+Overfull \hbox (18.13756pt too wide) in paragraph at lines 508--510
 []\T1/ptm/m/n/10 the in-dices of the meth-ods that should be plot-ted. De-fault
  is to 1:length(x$err.rel.ave),
 [9] (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [10]
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 596--602
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 597--603
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -257,7 +257,7 @@ dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw
 /times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utm
 ri8a.pfb>
-Output written on Rd2.pdf (17 pages, 142541 bytes).
+Output written on Rd2.pdf (17 pages, 142702 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.15 [TeX Live 2013] (kpathsea + Thai support).
 Scanning input file Rd2.idx....done (25 entries accepted, 0 rejected).
@@ -339,7 +339,7 @@ ive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/inconsolata/ts1fi4.fd)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [4]
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 237--243
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 238--244
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -348,12 +348,12 @@ Inference\T1/ptm/m/n/10 ,
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [7]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [8]
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
-Overfull \hbox (18.13756pt too wide) in paragraph at lines 507--509
+Overfull \hbox (18.13756pt too wide) in paragraph at lines 508--510
 []\T1/ptm/m/n/10 the in-dices of the meth-ods that should be plot-ted. De-fault
  is to 1:length(x$err.rel.ave),
 [9] (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def) [10]
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 596--602
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 597--603
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -388,8 +388,8 @@ dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw
 /times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utm
 ri8a.pfb>
-Output written on Rd2.pdf (17 pages, 142888 bytes).
+Output written on Rd2.pdf (17 pages, 143054 bytes).
 Transcript written on Rd2.log.
 Saving output to 'bestsubset-manual.pdf' ...
 Done
-You may want to clean up by 'rm -rf /var/folders/f4/c1t2d_5d0lb6z9g3pp8gs5_m0000gq/T//Rtmp7hML5R/Rd2pdf7e163f8f40'
+You may want to clean up by 'rm -rf /var/folders/f4/c1t2d_5d0lb6z9g3pp8gs5_m0000gq/T//RtmpkuJT2y/Rd2pdf865c37715408'

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  7 MAR 2017 18:49
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  20 APR 2017 10:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -684,8 +684,8 @@ LaTeX Font Info:    Try loading font information for T1+fi4 on input line 21.
 File: t1fi4.fd 2009/05/28 T1/Inconsolata
 )
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 31.
-LaTeX Font Info:    Try loading font information for T1+phv on input line 31.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 32.
+LaTeX Font Info:    Try loading font information for T1+phv on input line 32.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
@@ -708,7 +708,7 @@ File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 ) [2]
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 123.
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 124.
 
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/ts1ptm.fd
@@ -717,7 +717,7 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 )
-LaTeX Font Info:    Try loading font information for TS1+fi4 on input line 193.
+LaTeX Font Info:    Try loading font information for TS1+fi4 on input line 194.
 
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/inconsolata/ts1fi4.fd
@@ -732,7 +732,7 @@ File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 Missing character: There is no ' in font ts1-inconsolata!
 Missing character: There is no ' in font ts1-inconsolata!
  [4]
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 237--243
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 238--244
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -762,7 +762,7 @@ File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 Missing character: There is no ' in font ts1-inconsolata!
 Missing character: There is no ' in font ts1-inconsolata!
 
-Overfull \hbox (18.13756pt too wide) in paragraph at lines 507--509
+Overfull \hbox (18.13756pt too wide) in paragraph at lines 508--510
 []\T1/ptm/m/n/10 the in-dices of the meth-ods that should be plot-ted. De-fault
  is to 1:length(x$err.rel.ave),
  []
@@ -779,7 +779,7 @@ File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 Missing character: There is no ' in font ts1-inconsolata!
 Missing character: There is no ' in font ts1-inconsolata!
 
-Overfull \hbox (31.34732pt too wide) in paragraph at lines 596--602
+Overfull \hbox (31.34732pt too wide) in paragraph at lines 597--603
 \T1/ptm/m/n/10 (This dif-fers from the parametriza-tion used in the \T1/fi4/m/n
 /10 coef.fs \T1/ptm/m/n/10 func-tion in the R pack-age \T1/fi4/m/n/10 selective
 Inference\T1/ptm/m/n/10 ,
@@ -818,18 +818,18 @@ LaTeX Font Warning: Font shape `T1/fi4/m/it' undefined
 
 
 ])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 904.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 904.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 905.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 905.
  (./Rd2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 904.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 904.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 905.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 905.
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
 (rerunfilecheck)             Checksum: 0D7AB091D1E4145071D9D57F41169528;844.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 904.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 905.
  ) 
 Here is how much of TeX's memory you used:
  6470 strings out of 493315
@@ -855,7 +855,7 @@ dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw
 /times/utmr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utm
 ri8a.pfb>
-Output written on Rd2.pdf (17 pages, 142888 bytes).
+Output written on Rd2.pdf (17 pages, 143054 bytes).
 PDF statistics:
  358 PDF objects out of 1000 (max. 8388607)
  324 compressed objects within 4 object streams

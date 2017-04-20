@@ -1,29 +1,22 @@
 * using log directory ‘/Users/hastie/GITHUB/best-subset/bestsubset.Rcheck’
-* using R version 3.3.1 (2016-06-21)
+* using R version 3.3.3 (2017-03-06)
 * using platform: x86_64-apple-darwin13.4.0 (64-bit)
 * using session charset: UTF-8
 * checking for file ‘bestsubset/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘bestsubset’ version ‘1.0.0’
+* this is package ‘bestsubset’ version ‘1.0.3’
 * checking package namespace information ... OK
 * checking package dependencies ... OK
-* checking if this is a source package ... WARNING
-Subdirectory ‘bestsubset/src’ contains apparent object files/libraries
-  bestsubset.so matrixcomps.o
-Object files/libraries should not be included in a source package.
+* checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
-* checking whether package ‘bestsubset’ can be installed ... WARNING
-Found the following significant warnings:
-  Warning: package ‘slam’ was built under R version 3.3.2
-See ‘/Users/hastie/GITHUB/best-subset/bestsubset.Rcheck/00install.out’ for details.
+* checking whether package ‘bestsubset’ can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
-* checking DESCRIPTION meta-information ... NOTE
-Checking should be performed on sources prepared by ‘R CMD build’.
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
@@ -155,7 +148,26 @@ Undocumented code objects:
 All user-level objects in a package should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking for code/documentation mismatches ... OK
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from documentation object 'sim.master':
+sim.master
+  Code: function(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose
+                 = FALSE, file = NULL, file.rep = 5, rho = 0, s = 5,
+                 beta.type = 1, snr = 1, reorder = FALSE)
+  Docs: function(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose
+                 = FALSE, file = NULL, file.rep = 5, rho = 0, s = 5,
+                 beta.type = 1, snr = 1)
+  Argument names in code not in docs:
+    reorder
+
+Codoc mismatches from documentation object 'sim.xy':
+sim.xy
+  Code: function(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1,
+                 reorder = FALSE)
+  Docs: function(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1)
+  Argument names in code not in docs:
+    reorder
+
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'bs'
   ‘verbose’
@@ -211,4 +223,4 @@ Error in sim.xy(n, p, nval = 0, ntest = ntest, s = 5, beta.type = 2, snr = 1) :
 Execution halted
 * checking PDF version of manual ... OK
 * DONE
-Status: 1 ERROR, 6 WARNINGs, 2 NOTEs
+Status: 1 ERROR, 5 WARNINGs, 1 NOTE
