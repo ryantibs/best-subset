@@ -90,7 +90,7 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
   yval = as.numeric(xval %*% beta + rnorm(nval)*sigma)
 
   # Randomly reorder the variables?
-  if(reorder) {
+  if (reorder) {
     o = sample(p)
     x = x[,o]; xval = xval[,o]; Sigma = Sigma[o,o]; beta = beta[o]
   }

@@ -4,10 +4,11 @@
 \alias{plot.sim}
 \title{Plot function for sim object.}
 \usage{
-plot.sim(x, method.nums = 1:length(x$err.train.ave), method.names = NULL,
-  type = c("ave", "med"), std = TRUE, cols = 1:8, main = NULL,
-  cex.main = 1.25, legend.pos = c("topright"), make.pdf = FALSE,
-  fig.dir = ".", file.name = "sim", w = 6, h = 6, mar = NULL)
+\method{plot}{sim}(x, method.nums = 1:length(x$err.train.ave),
+  method.names = NULL, type = c("ave", "med"), std = TRUE, cols = 1:8,
+  main = NULL, cex.main = 1.25, legend.pos = c("topright"),
+  make.pdf = FALSE, fig.dir = ".", file.name = "sim", w = 6, h = 6,
+  mar = NULL)
 }
 \arguments{
 \item{x}{The sim object.}
