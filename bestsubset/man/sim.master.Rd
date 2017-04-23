@@ -5,7 +5,8 @@
 \title{Master function for running simulations.}
 \usage{
 sim.master(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose = FALSE,
-  file = NULL, file.rep = 5, rho = 0, s = 5, beta.type = 1, snr = 1)
+  file = NULL, file.rep = 5, rho = 0, s = 5, beta.type = 1, snr = 1,
+  reorder = FALSE)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
@@ -13,9 +14,9 @@ sim.master(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose = FALSE,
 \item{nval}{The number of validation observations.}
 
 \item{reg.funs}{This is a list of functions, representing the regression
-procedures to be used (evaluated) in the simulation. Each element of the 
+procedures to be used (evaluated) in the simulation. Each element of the
 list must be a function that takes x, y (the training predictor matrix and
-response vector) as its only two (mandatory) arguments, and must return an 
+response vector) as its only two (mandatory) arguments, and must return an
 object with associated coef and predict methods. The coef method must take
 obj (the returned object) and return a matrix of coefficients, with one
 column per tuning parameter value inherent to the regression method. The
@@ -29,15 +30,15 @@ results). Default is NULL, which effectively sets no seed.}
 
 \item{verbose}{Should intermediate progress be printed out? Default is FALSE.}
 
-\item{file, file.rep}{Name of a file to which simulation results are saved 
+\item{file, file.rep}{Name of a file to which simulation results are saved
 (using saveRDS), and a number of repetitions after which intermediate
 results are saved. Setting file to NULL is interpreted to mean that no
 simulations results should be saved; setting file.rep to 0 is interpreted
 to mean that simulations results should be saved at the very end, i.e., no
 intermediate saving. Defaults are NULL and 5, respectively.}
 
-\item{rho, s, beta.type, snr}{Arguments to pass to \code{\link{sim.xy}}; see the
-latter's help file for details.}
+\item{rho, s, beta.type, snr, reorder.}{Arguments to pass to
+\code{\link{sim.xy}}; see the latter's help file for details.}
 
 \item{Number}{of repetitions of which to average the results. Default is 50.}
 }
@@ -55,7 +56,7 @@ A list with components err.train, err.val, err.test, err.rel, prop,
   training errors, validation errors, etc. over the nrep repetitions.
   Similarly for the components with postfixes .std, .med, .mad, which return
   the standard deviation, median, and median absolute deviation. The returned
-  components with postfixes .tun.val and .tun.orc are each lists of length N, 
+  components with postfixes .tun.val and .tun.orc are each lists of length N,
   which return the appropriate metric when the tuning parameter for each
   regression method in each repetition is chosen by validation tuning (best
   validation error) or by oracle tuning (best test error).
@@ -94,7 +95,7 @@ sim.obj.losnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
 sim.obj.hisnr
 sim.obj.losnr
 
-# Plot simulation results, excluding relaxed lasso (it looks a bit crazy)
+# Plot simulation results, excluding relaxed lasso 
 par(mfrow=c(1,2))
 plot(sim.obj.hisnr, method.nums=1:3, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, method.nums=1:3, main="SNR = 0.1", legend.pos="topleft")

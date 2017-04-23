@@ -4,11 +4,10 @@
 \alias{plot.sim}
 \title{Plot function for sim object.}
 \usage{
-\method{plot}{sim}(x, method.nums = 1:length(x$err.train.ave),
-  method.names = NULL, type = c("ave", "med"), std = TRUE, cols = 1:8,
-  main = NULL, cex.main = 1.25, legend.pos = c("topright"),
-  make.pdf = FALSE, fig.dir = ".", file.name = "sim", w = 6, h = 6,
-  mar = NULL)
+plot.sim(x, method.nums = 1:length(x$err.train.ave), method.names = NULL,
+  type = c("ave", "med"), std = TRUE, cols = 1:8, main = NULL,
+  cex.main = 1.25, legend.pos = c("topright"), make.pdf = FALSE,
+  fig.dir = ".", file.name = "sim", w = 6, h = 6, mar = NULL)
 }
 \arguments{
 \item{x}{The sim object.}
@@ -30,7 +29,7 @@ standard errors. Default is TRUE.}
 
 \item{make.pdf}{Should a pdf be produced? Default is FALSE.}
 
-\item{fig.dir, file.name}{The figure directory and file name to use, only 
+\item{fig.dir, file.name}{The figure directory and file name to use, only
 when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
 is always appended to the given file name.)}
 
@@ -41,7 +40,7 @@ make.pdf is TRUE. Defaults are 6 for both.}
 the margins are set automatically (depending on whether not main is NULL).}
 }
 \description{
-Plot the results of a set of simulations, stored in an object of class sim 
+Plot the results of a set of simulations, stored in an object of class sim
   (produced by \code{\link{sim.master}}).
 }
 

@@ -18,7 +18,7 @@ solution is considered (no strict relaxations), at each value of lambda.}
 }
 \description{
 This is just a simple wrapper function around the
-  \code{\link{glmnet}} function in the R package of the same name. Its 
+  \code{\link{glmnet}} function in the R package of the same name. Its
   purpose is twofold: (i) to provide functionality where the associated coef
   and predict methods always produce coefficients and predictions at exactly
   nlambda values, by default (the \code{\link{glmnet}} function may produce a

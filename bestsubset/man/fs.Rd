@@ -12,7 +12,7 @@ fs(x, y, maxsteps = min(ncol(x), 2000), intercept = TRUE,
 
 \item{y}{Vector of responses, of length (say) n.}
 
-\item{maxsteps}{Maximum number of steps of the forward stepwise path to 
+\item{maxsteps}{Maximum number of steps of the forward stepwise path to
 compute. Default is min(p,2000).}
 
 \item{intercept, normalize}{Should an intercept be included in the regression
@@ -24,14 +24,14 @@ Default is TRUE for both.}
 \value{
 A list with the following components:
   \itemize{
-  \item action, sign: vectors that give the index of the variable added at 
+  \item action, sign: vectors that give the index of the variable added at
   each step, and the sign of this variable's correlation with the residual
   upon entry df
-  \item df: vector that gives the (naive) degrees of freedom of the model 
+  \item df: vector that gives the (naive) degrees of freedom of the model
   at each step, i.e., the number of active predictor variables (+ 1 if there
   is an intercept included)
   \item beta: matrix of regression coefficients for each step along the path,
-    one column per step 
+    one column per step
   \item completepath: a boolean indicating whether the forward stepwise path
   was run to completion (as opposed to being stopped early because the max
   number of steps was achieved)
@@ -54,21 +54,18 @@ This function implements forward stepwise regression, adding the
   it is used, e.g., by the \code{step} function in R. Note that, for example,
   the \code{lars} package implements a stepwise option (with type="step"),
   but uses a (mildly) different entry criterion, based on maximal absolute
-  correlation between the original (non-orthogonalized) predictors and the 
+  correlation between the original (non-orthogonalized) predictors and the
   residual.
 }
 \examples{
 # Simulate some simple regression data with the first 5 coefficients
 # being nonzero
-set.seed(3)
+set.seed(0)
 n = 100
 p = 20
-ntest = 10000
-xy.obj = sim.xy(n,p,nval=0,ntest=ntest,s=5,beta.type=2,snr=1)
+xy.obj = sim.xy(n,p,nval=0,s=5,beta.type=2,snr=1)
 x = xy.obj$x
 y = xy.obj$y
-xtest = xy.obj$xtest
-mutest = xy.obj$mutest
 
 # Run forward stepwise regression for 8 steps
 fs.obj = fs(x,y,intercept=FALSE,maxsteps=8,verbose=TRUE)
@@ -76,19 +73,24 @@ fs.beta = coef(fs.obj)
 fs.supp = apply(fs.beta != 0, 2, which)
 
 # Solve best subset selection for 8 sparsity levels
-bs.obj = bs(x,y,intercept=FALSE,k=1:8,verbose=TRUE)
+bs.obj = bs(x,y,intercept=FALSE,k=0:8,verbose=TRUE)
 bs.beta = coef(bs.obj)
 bs.supp = apply(bs.beta != 0, 2, which)
 
 # Compare supports of the solutions with 5 and 8 variables
-fs.supp[[5]]; bs.supp[[5]]
-fs.supp[[8]]; bs.supp[[8]]
+fs.supp[[6]]; bs.supp[[6]]
+fs.supp[[9]]; bs.supp[[9]]
 
-# Predict on test data and record risk
+# Predict on test data and record test error
+ntest = 10000
+xy.obj.test = sim.xy(ntest,p,nval=0,s=5,beta.type=2,snr=1)
+xtest = xy.obj.test$x
+ytest = xy.obj.test$y
+
 fs.pred = predict(fs.obj,newx=xtest)
-bs.pred = predict(fs.obj,newx=xtest)
-colMeans((fs.pred - mutest)^2)
-colMeans((bs.pred - mutest)^2)
+bs.pred = predict(bs.obj,newx=xtest)
+colMeans((fs.pred - ytest)^2)
+colMeans((bs.pred - ytest)^2)
 }
 \author{
 Ryan Tibshirani

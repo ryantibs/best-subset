@@ -64,7 +64,7 @@
 #' @example examples/ex.fs.R
 #' @export bs
 
-bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
+bs = function(x, y, k=0:min(nrow(x),ncol(x)), intercept=TRUE,
               form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
               maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
 
@@ -109,7 +109,7 @@ bs = function(x, y, k=1:min(nrow(x),ncol(x)), intercept=TRUE,
   }
 
   # Trim sparsity levels if we need to, and initialize some variables
-  k = k[k >= 1 & k <= p]
+  k = k[k >= 0 & k <= p]
   beta0 = NULL
   nk = length(k)
   beta = matrix(0,p,nk)
@@ -146,6 +146,9 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
   n = nrow(x)
   p = ncol(x)
 
+  # Take care of a trivial case, if needed
+  if (k==0) return(list(beta=rep(0,p), status="OPTIMAL"))
+
   # Run the projected gradient method, gather some info from it
   best.beta = bs.proj.grad(x,y,k,nruns=nruns,maxiter=maxiter,tol=tol,
                            polish=polish,L=L,verbose=verbose)
@@ -181,9 +184,9 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
             rvec, cbind(x, Matrix(0,n,p), -Diagonal(n,1))))
     model$sense = c(rep("<=",2*p+1), rep("=",n)) # Ineq or eq between Ax and b?
     model$rhs = c(rep(0,2*p), k, rep(0,n))       # The vector b
-    zeta.bd = max(colSums(apply(abs(x),2,sort,decreasing=TRUE)[1:k,,drop=F]))
-    model$ub = c(rep(bigm,p), rep(1,p), rep(zeta.bd,n))
-    model$lb = c(rep(-bigm,p), rep(0,p), rep(-zeta.bd,n))
+    zeta.bd = colSums(apply(abs(x),1,sort,decreasing=TRUE)[1:k,,drop=F])*bigm
+    model$ub = c(rep(bigm,p), rep(1,p), zeta.bd)
+    model$lb = c(rep(-bigm,p), rep(0,p), -zeta.bd)
     model$obj = c(-2*t(x)%*%y, rep(0,p+n))       # The vector c in the objective
     model$Q = bdiag(Matrix(0,2*p,2*p), Diagonal(n,1))
     model$vtypes = c(rep("C",p), rep("B",p), rep("C",n)) # Variable type
@@ -194,7 +197,8 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
   if (!is.null(time.limit)) params$TimeLimit = time.limit
   gur.obj = quiet(gurobi(model,params))
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
-
+  if (is.null(gur.obj$x)) gur.obj$x = best.beta
+                            
   return(list(beta=gur.obj$x[1:p], status=gur.obj$status))
 }
 
@@ -291,10 +295,15 @@ norm = function(v) return(sqrt(sum(v^2)))
 
 coef.bs = function(object, s, ...) {
   if (missing(s)) s = object$k
-  else if (any(!(s %in% object$k))) {
+  if (any(!(s %in% object$k))) {
     stop(sprintf("s must be a subset of object$k."))
   }
-  return(object$beta[,s])
+  mat = matrix(rep(object$k,length(s)),nrow=length(s),byrow=TRUE)
+  ind = max.col(mat==s,ties.method="first")
+
+  beta.mat = object$beta[,ind]
+  if (object$intercept) return(rbind(rep(object$by,ncol(beta.mat)),beta.mat))
+  else return(beta.mat)
 }
 
 #' Predict function for bs object.
@@ -316,11 +325,11 @@ coef.bs = function(object, s, ...) {
 predict.bs = function(object, newx, s, ...) {
   beta = coef.bs(object,s)
   if (missing(newx)) newx = object$x
-  else {
-    newx = matrix(newx,ncol=ncol(object$x))
-    newx = scale(newx,object$bx,FALSE)
-  }
-  return(newx %*% beta + object$by)
+  else newx = matrix(newx,ncol=ncol(object$x))
+  
+  newx = scale(newx,object$bx,FALSE)
+  if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
+  return(newx %*% beta)
 }
 
 ##############################

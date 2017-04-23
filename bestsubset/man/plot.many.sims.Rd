@@ -4,7 +4,7 @@
 \alias{plot.many.sims}
 \title{Plot the results over several simulation settings.}
 \usage{
-\method{plot}{many.sims}(file.list, grouping, snr.vec, method.nums = NULL,
+plot.many.sims(file.list, grouping, snr.vec, method.nums = NULL,
   method.names = NULL, what = c("error", "prop", "nonzero"),
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
   fig.dir = ".", file.name = NULL, w = 6, h = 6, mar = NULL,

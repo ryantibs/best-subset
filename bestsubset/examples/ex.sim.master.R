@@ -28,7 +28,7 @@ sim.obj.losnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=10,seed=0,
 sim.obj.hisnr
 sim.obj.losnr
 
-# Plot simulation results, excluding relaxed lasso (it looks a bit crazy)
+# Plot simulation results, excluding relaxed lasso 
 par(mfrow=c(1,2))
 plot(sim.obj.hisnr, method.nums=1:3, main="SNR = 1", legend.pos="topright")
 plot(sim.obj.losnr, method.nums=1:3, main="SNR = 0.1", legend.pos="topleft")

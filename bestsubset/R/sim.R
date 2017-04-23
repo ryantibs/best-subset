@@ -19,7 +19,7 @@
 #' @param snr Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
 #'   mu is mean and sigma^2 is the error variance. The error variance is set so
 #'   that the given SNR is achieved. Default is 1.
-#' @param reorder Reorder the variables at random to avoid any bias. Default is FALSE.
+#' @param reorder Reorder the variables at random? Default is FALSE.
 #' @return A list with the following components: x, y, xval, yval, Sigma, beta,
 #'   and sigma.
 #'
@@ -88,11 +88,13 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
   # Generate responses
   y = as.numeric(x %*% beta + rnorm(n)*sigma)
   yval = as.numeric(xval %*% beta + rnorm(nval)*sigma)
-    if(reorder){#randomly reorder the variables, in case of bias
-        o=sample(1:p,p)
-        enlist(x=x[,o],y,xval=xval[,o],yval,Sigma=Sigma[o,o],beta=beta[o],sigma)
-    }
-    else enlist(x,y,xval,yval,Sigma,beta,sigma)
+
+  # Randomly reorder the variables?
+  if(reorder) {
+    o = sample(p)
+    x = x[,o]; xval = xval[,o]; Sigma = Sigma[o,o]; beta = beta[o]
+  }
+  enlist(x,y,xval,yval,Sigma,beta,sigma)
 }
 
 #' Master function for running simulations.
@@ -122,8 +124,8 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 #'   simulations results should be saved; setting file.rep to 0 is interpreted
 #'   to mean that simulations results should be saved at the very end, i.e., no
 #'   intermediate saving. Defaults are NULL and 5, respectively.
-#' @param rho,s,beta.type,snr, reorder. Arguments to pass to \code{\link{sim.xy}}; see the
-#'   latter's help file for details.
+#' @param rho,s,beta.type,snr,reorder. Arguments to pass to
+#'   \code{\link{sim.xy}}; see the latter's help file for details.
 #'
 #' @return A list with components err.train, err.val, err.test, err.rel, prop,
 #'   risk, nzs, opt for the training error, validation error, test error,
@@ -151,7 +153,8 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 #' @export sim.master
 
 sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
-                      file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
+                      file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1,
+                      reorder=FALSE) {
 
   this.call = match.call()
   if (!is.null(seed)) set.seed(seed)
@@ -196,14 +199,16 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
 
         # Grab the estimated coefficients, and the predicted values on the
         # training and validation sets
-        betahat = as.matrix(coef(reg.obj)); m = ncol(betahat); nc=nrow(betahat)
-        ##check for intercept
-        if(nc==p+1){# intercept present
-            intercpt=TRUE
-            beta0=betahat[1,]
-            betahat=betahat[-1,]
+        betahat = as.matrix(coef(reg.obj))
+        m = ncol(betahat); nc = nrow(betahat)
+        
+        # Check for intercept
+        if (nc == p+1) {
+          intercept = TRUE
+          beta0 = betahat[1,]
+          betahat = betahat[-1,]
         }
-        else intercpt=FALSE
+        else intercept = FALSE
 
         muhat.train = as.matrix(predict(reg.obj,xy.obj$x))
         muhat.val = as.matrix(predict(reg.obj,xy.obj$xval))
@@ -222,9 +227,8 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         err.train[[j]][i,] = colMeans((muhat.train - xy.obj$y)^2)
         err.val[[j]][i,] = colMeans((muhat.val - xy.obj$yval)^2)
         delta = betahat - xy.obj$beta
-        riskji= diag(t(delta) %*% xy.obj$Sigma %*% delta)
-        if(intercpt)riskji=riskji+beta0^2
-        risk[[j]][i,] = riskji
+        risk[[j]][i,] = diag(t(delta) %*% xy.obj$Sigma %*% delta)
+        if (intercept) risk[[j]][i,] = risk[[j]][i,] + beta0^2
         err.test[[j]][i,] = risk[[j]][i,] + xy.obj$sigma^2
         err.rel[[j]][i,] = err.test[[j]][i,] / xy.obj$sigma^2
         prop[[j]][i,] = 1 - err.rel[[j]][i,] / (1+snr)
@@ -383,7 +387,7 @@ print.sim = function(x, type=c("ave","med"), std=TRUE, digits=3, ...) {
   type = match.arg(type)
 
   if (!is.null(x$call)) {
-    cat("\nCall:\n") # TODO append call
+    cat("\nCall:\n")
     dput(x$call)
   }
   N = length(x$err.rel.tun.val.ave)

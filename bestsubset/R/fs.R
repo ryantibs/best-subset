@@ -305,7 +305,10 @@ coef.fs = function(object, s, ...) {
   else if (min(s)<0 || max(s)>k) stop(sprintf("s must be between 0 and %i",k))
   knots = 0:k
   decreasing = FALSE
-  return(coef.interpolate(beta,s,knots,decreasing))
+
+  beta.mat = coef.interpolate(beta,s,knots,decreasing)
+  if (object$intercept) return(rbind(rep(object$by,ncol(beta.mat)),beta.mat))
+  else return(beta.mat)
 }
 
 #' Predict function for fs object.
@@ -335,11 +338,11 @@ coef.fs = function(object, s, ...) {
 predict.fs = function(object, newx, s, ...) {
   beta = coef.fs(object,s)
   if (missing(newx)) newx = object$x
-  else
-    newx = matrix(newx,ncol=ncol(object$x))
-  newx = scale(newx,object$bx,FALSE)## The version of x saved on the object is BEFORE standardization
-
-  return(newx %*% beta + object$by)
+  else newx = matrix(newx,ncol=ncol(object$x))
+  
+  newx = scale(newx,object$bx,FALSE)
+  if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
+  return(newx %*% beta)
 }
 
 ##############################

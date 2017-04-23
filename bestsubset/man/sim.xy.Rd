@@ -4,7 +4,8 @@
 \alias{sim.xy}
 \title{Predictors and responses generation.}
 \usage{
-sim.xy(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1)
+sim.xy(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1,
+  reorder = FALSE)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
@@ -27,6 +28,8 @@ details below. Default is 1.}
 \item{snr}{Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
 mu is mean and sigma^2 is the error variance. The error variance is set so
 that the given SNR is achieved. Default is 1.}
+
+\item{reorder}{Reorder the variables at random? Default is FALSE.}
 }
 \value{
 A list with the following components: x, y, xval, yval, Sigma, beta,
@@ -38,7 +41,7 @@ Generate a predictor matrix x, and response vector y, following a specified
   one for training, and one for validation.
 }
 \details{
-The data model is: \eqn{Y \sim N(X\beta, \sigma^2 I)}. 
+The data model is: \eqn{Y \sim N(X\beta, \sigma^2 I)}.
   The predictor variables have covariance matrix Sigma, with (i,j)th entry
   rho^abs(i-j). The error variance sigma^2 is set according to the desired
   signal-to-noise ratio. The first 4 options for the nonzero pattern
@@ -60,15 +63,12 @@ The data model is: \eqn{Y \sim N(X\beta, \sigma^2 I)}.
 \examples{
 # Simulate some simple regression data with the first 5 coefficients
 # being nonzero
-set.seed(3)
+set.seed(0)
 n = 100
 p = 20
-ntest = 10000
-xy.obj = sim.xy(n,p,nval=0,ntest=ntest,s=5,beta.type=2,snr=1)
+xy.obj = sim.xy(n,p,nval=0,s=5,beta.type=2,snr=1)
 x = xy.obj$x
 y = xy.obj$y
-xtest = xy.obj$xtest
-mutest = xy.obj$mutest
 
 # Run forward stepwise regression for 8 steps
 fs.obj = fs(x,y,intercept=FALSE,maxsteps=8,verbose=TRUE)
@@ -76,19 +76,24 @@ fs.beta = coef(fs.obj)
 fs.supp = apply(fs.beta != 0, 2, which)
 
 # Solve best subset selection for 8 sparsity levels
-bs.obj = bs(x,y,intercept=FALSE,k=1:8,verbose=TRUE)
+bs.obj = bs(x,y,intercept=FALSE,k=0:8,verbose=TRUE)
 bs.beta = coef(bs.obj)
 bs.supp = apply(bs.beta != 0, 2, which)
 
 # Compare supports of the solutions with 5 and 8 variables
-fs.supp[[5]]; bs.supp[[5]]
-fs.supp[[8]]; bs.supp[[8]]
+fs.supp[[6]]; bs.supp[[6]]
+fs.supp[[9]]; bs.supp[[9]]
 
-# Predict on test data and record risk
+# Predict on test data and record test error
+ntest = 10000
+xy.obj.test = sim.xy(ntest,p,nval=0,s=5,beta.type=2,snr=1)
+xtest = xy.obj.test$x
+ytest = xy.obj.test$y
+
 fs.pred = predict(fs.obj,newx=xtest)
-bs.pred = predict(fs.obj,newx=xtest)
-colMeans((fs.pred - mutest)^2)
-colMeans((bs.pred - mutest)^2)
+bs.pred = predict(bs.obj,newx=xtest)
+colMeans((fs.pred - ytest)^2)
+colMeans((bs.pred - ytest)^2)
 }
 \author{
 Trevor Hastie, Rob Tibshirani, Ryan Tibshirani

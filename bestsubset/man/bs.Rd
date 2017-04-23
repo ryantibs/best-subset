@@ -4,7 +4,7 @@
 \alias{bs}
 \title{Best subset selection.}
 \usage{
-bs(x, y, k = 1:min(nrow(x), ncol(x)), intercept = TRUE,
+bs(x, y, k = 0:min(nrow(x), ncol(x)), intercept = TRUE,
   form = ifelse(nrow(x) < ncol(x), 2, 1), time.limit = 100, nruns = 50,
   maxiter = 1000, tol = 1e-04, polish = TRUE, verbose = FALSE)
 }
@@ -18,7 +18,7 @@ subset regression model; can be a vector, in which case the best subset
 selection problem is solved for every value of the sparsity level. Default
 is 1:min(n,p).}
 
-\item{intercept}{Should an intercept be included in the regression model? 
+\item{intercept}{Should an intercept be included in the regression model?
 Default is TRUE.}
 
 \item{form}{Either of 1 or 2, specifying the formulation to use for best
@@ -31,7 +31,7 @@ compute the subset selection solution at each value of k. Default is 100.}
 
 \item{nruns}{The number of runs of projected gradient descent to use, where
 each run begins at a random initialization for the coefficients. The best
-estimate over all these runs (achieving the lowest criterion value) is 
+estimate over all these runs (achieving the lowest criterion value) is
 passed to Gurobi as a warm start. Default is 50.}
 
 \item{maxiter}{The maximum number of iterations for each run of projected
@@ -48,7 +48,7 @@ Default is TRUE.}
 \item{Should}{intermediate progress be printed out? Default is FALSE.}
 }
 \value{
-A list with the following components: 
+A list with the following components:
   \itemize{
   \item beta: matrix of regression coefficients, one column per sparsity
     level
@@ -74,21 +74,18 @@ This function solves best subset selection program:
   solution as a warm start.
   There are two options for how to formulate best subset selection as a mixed
   integer quadratic program, one recommended when n >= p, and the other when
-  n < p. They correspond to equations (2.5) and (2.6) in the paper by 
+  n < p. They correspond to equations (2.5) and (2.6) in the paper by
   Bertismas, King, and Mazumder (2016), respectively.
 }
 \examples{
 # Simulate some simple regression data with the first 5 coefficients
 # being nonzero
-set.seed(3)
+set.seed(0)
 n = 100
 p = 20
-ntest = 10000
-xy.obj = sim.xy(n,p,nval=0,ntest=ntest,s=5,beta.type=2,snr=1)
+xy.obj = sim.xy(n,p,nval=0,s=5,beta.type=2,snr=1)
 x = xy.obj$x
 y = xy.obj$y
-xtest = xy.obj$xtest
-mutest = xy.obj$mutest
 
 # Run forward stepwise regression for 8 steps
 fs.obj = fs(x,y,intercept=FALSE,maxsteps=8,verbose=TRUE)
@@ -96,19 +93,24 @@ fs.beta = coef(fs.obj)
 fs.supp = apply(fs.beta != 0, 2, which)
 
 # Solve best subset selection for 8 sparsity levels
-bs.obj = bs(x,y,intercept=FALSE,k=1:8,verbose=TRUE)
+bs.obj = bs(x,y,intercept=FALSE,k=0:8,verbose=TRUE)
 bs.beta = coef(bs.obj)
 bs.supp = apply(bs.beta != 0, 2, which)
 
 # Compare supports of the solutions with 5 and 8 variables
-fs.supp[[5]]; bs.supp[[5]]
-fs.supp[[8]]; bs.supp[[8]]
+fs.supp[[6]]; bs.supp[[6]]
+fs.supp[[9]]; bs.supp[[9]]
 
-# Predict on test data and record risk
+# Predict on test data and record test error
+ntest = 10000
+xy.obj.test = sim.xy(ntest,p,nval=0,s=5,beta.type=2,snr=1)
+xtest = xy.obj.test$x
+ytest = xy.obj.test$y
+
 fs.pred = predict(fs.obj,newx=xtest)
-bs.pred = predict(fs.obj,newx=xtest)
-colMeans((fs.pred - mutest)^2)
-colMeans((bs.pred - mutest)^2)
+bs.pred = predict(bs.obj,newx=xtest)
+colMeans((fs.pred - ytest)^2)
+colMeans((bs.pred - ytest)^2)
 }
 \author{
 Ryan Tibshirani
