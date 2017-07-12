@@ -3,7 +3,7 @@ library(bestsubset)
 
 # Set some overall simulation parameters
 n = 50; p = 1000 # Size of training set, and number of predictors
-nval = n # Size of validation and testing sets
+nval = n # Size of validation set
 nrep = 10 # Number of repetitions for a given setting
 seed = 0 # Random number generator seed
 type.vec = c(1:3,5) # Simulation settings to consider

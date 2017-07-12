@@ -4,7 +4,7 @@
 \alias{coef.lasso}
 \title{Coef function for lasso object.}
 \usage{
-\method{coef}{lasso}(object, s = NULL)
+\method{coef}{lasso}(object, s = NULL, gamma = NULL)
 }
 \description{
 Coef function for lasso object.

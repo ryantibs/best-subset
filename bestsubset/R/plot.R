@@ -1,24 +1,26 @@
 #' Plot the results over several simulation settings.
 #'
-#' Plot results over several sets of simulations, where the same methods are run
-#'   over different simulations settings.
+#' Plot results over several sets of simulations saved in files, where the same
+#'   methods are run over different simulations settings.
 #'
-#' @param file.list vector of strings that point to saved sim objects (each
+#' @param file.list Vector of strings that point to saved sim objects (each
 #'   object produced by a call to \code{\link{sim.master}}).
-#' @param grouping integer or factor vector indicating the grouping to use for
-#'   the simulations. Within each group, the relative test error achieved by
-#'   each method is plotted across the available SNR levels.
-#' @param snr.vec Vector giving the SNR levels considered within each group.
-#' @param method.nums the indices of the methods that should be plotted. Default
+#' @param row,col One of "beta", "rho", or "snr", indicating the variables for
+#'   the rows and columns of plotting grid; note that row and col must be
+#'   different.  Default is row="beta" and col="rho", so that the plotting grid
+#'   displays the metric specified in what (default is relative test error, see
+#'   below) versus the SNR, in a plotting grid with the coefficient types across
+#'   the rows, and the correlation levels across the columns.
+#' @param method.nums The indices of the methods that should be plotted. Default
 #'   is NULL, in which case all methods are plotted.
-#' @param method.names the names of the methods that should be plotted. Default
+#' @param method.names The names of the methods that should be plotted. Default
 #'   is NULL, in which case the names are extracted from the sim objects.
-#' @param what one of "error", "prop", or "nonzero", indicating whether to plot
+#' @param what One of "error", "risk", "prop", or "nonzero", indicating whether to plot
 #'   the relative test error, test proportion of variance explained, or number
 #'   of nonzeros, for each method across the given SNR levels. When what is
 #'   "prop", the x-axis is population proportion of variance explained, instead
 #'   of SNR. Default is "error". 
-#' @param tuning one of "validation" or "oracle", indicating whether the tuning
+#' @param tuning Either "validation" or "oracle", indicating whether the tuning
 #'   parameter for each method should be chosen according to minimizing
 #'   validation error, or according to minimizing test error. Default is
 #'   "validation".
@@ -28,125 +30,131 @@
 #' @param std Should standard errors be displayed (in parantheses)? When type
 #'   is set to "med", the median absolute deviations are shown in place of the
 #'   standard errors. Default is TRUE.
-#' @param fig.dir The figure directory to use. Default is ".".
-#' @param file.name Vector of strings, giving the file names to use for the 
-#'   saved figures. Default is NULL, in which case the names "sim1", "sim2",
-#'   etc. are used. (Extensions of "pdf" are always appended to the given file
-#'   names.)
-#' @param w,h the width and height (in inches) for the plots. Defaults are 6 for
-#'   both.
-#' @param mar the margins to use for the plots. Default is NULL, in which case
-#'   the margins are set automatically (depending on whether not main is NULL).
-#' @param cols,main,cex.main,log,legend.pos graphical parameters.
-#' @param tex.dir The latex directory to use. Default is NULL, which means that
-#'   no lines of tex (includegraphics statements, for the figures created) will
-#'   be produced.
+#' @param lwd,pch,main graphical parameters.
+#' @param make.pdf Should a pdf be produced? Default is FALSE.
+#' @param fig.dir,file.name The figure directory and file name to use, only
+#'   when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
+#'   is always appended to the given file name.)
+#' @param w,h the width and height (in inches) for the plot, used only when
+#'   make.pdf is TRUE. Defaults are 6 for both.
 #'
-#' @export plot.many.sims
+#' @export plot.from.file
 
-plot.many.sims = function(file.list, grouping, snr.vec, method.nums=NULL,
-                          method.names=NULL, what=c("error","prop","nonzero"),
+plot.from.file = function(file.list,
+                          row=c("beta","rho","snr"), col=c("rho","beta","snr"),
+                          method.nums=NULL, method.names=NULL,
+                          what=c("error","risk","prop","nonzero"), rel.to=NULL,
                           tuning=c("validation","oracle"), type=c("ave","med"),
-                          std=TRUE, fig.dir=".", file.name=NULL, w=6, h=6,
-                          mar=NULL, cols=1:8, main=NULL, cex.main=1.25,
-                          log=ifelse(what=="prop","","x"),
-                          legend.pos="bottomright", tex.dir=NULL) {
+                          std=TRUE, lwd=1, pch=19, main=NULL, make.pdf=FALSE,
+                          fig.dir=".", file.name="sim", w=8, h=10) {
 
+  # Check for ggplot2 package
+  if (!require("ggplot2",quietly=TRUE)) {
+    stop("Package ggplot2 not installed (required here)!")
+  }
+  
+  row = match.arg(row)
+  col = match.arg(col)
+  if (row==col) stop("row and col must be different")
+  
   what = match.arg(what)
   tuning = match.arg(tuning)
   type = match.arg(type)
-  if (is.null(file.name)) file.name = paste0("sim",1:length(file.list))
-  if (is.null(mar)) {
-    mar = c(4.25,4.25,1,1)
-    #if (pve) mar[3] = mar[3]+2
-    if (!is.null(main)) mar[3] = mar[3]+2.25
-  }
-  if (is.null(main)) main = ""
-  groups = unique(grouping)
-  main = rep(main,length(groups))
-  legend.pos = rep(legend.pos,length(groups))
-  plot.name = numeric(length(groups))
 
-  # Set the x-axis, and axes labels
-  if (what=="error") {
-    xvar = snr.vec
-    xlab = "Signal-to-noise ratio"
-    ylab = "(Test error)/sigma^2"
-  }
-  else if (what=="prop") {
-    xvar = snr.vec/(1+snr.vec)
-    xlab = "Population proportion of var explained"
-    ylab = "Test proportion of var explained"
+  # Set the method numbers and names
+  sim.obj = readRDS(file.list[1])
+  if (is.null(method.nums)) method.nums = 1:length(sim.obj$err.test)
+  if (is.null(method.names)) method.names =
+                               names(sim.obj$err.test[method.nums])
+  N = length(method.nums)
+  
+  # Set the base number and name
+  if (is.null(rel.to)) {
+    base.num = 0
+    base.name = "null"
   }
   else {
-    xvar = snr.vec
-    xlab = "Signal-to-noise ratio"
-    ylab = "Number of nonzeros"
+    base.num = which(method.nums==rel.to)
+    base.name = tolower(method.names[base.num])
   }
   
-  for (i in 1:length(groups)) {
-    # Extract metrics from all the simulations in the current group
-    jj = which(grouping==groups[i])
-    ymat = c(); ystd = c()
-    for (j in jj) {
-      sim.obj = readRDS(file.list[j])
-      if (is.null(method.nums)) method.nums = 1:length(sim.obj$err.train.ave)
-      if (is.null(method.names)) method.names =
-                                   names(sim.obj$err.train.ave[method.nums])
+  # Set the y-label
+  ylab = switch(what,
+                error=paste0("Relative test error (to ",base.name,")"),
+                risk=paste0("Relative risk (to ",base.name,")"),
+                prop="Proportion of variance explained",
+                nonzero="Number of nonzeros")
 
-      # Grab the y-values for the plot
-      comp.name = paste0(
-        switch(what,error="err.rel.",prop="prop.",nonzero="nzs."),"tun.",
-        switch(tuning,validation="val.",oracle="ora."))
-      comp.name.val = paste0(comp.name, switch(type,ave="ave",med="med"))
-      comp.name.std = paste0(comp.name, switch(type,ave="std",med="mad"))
-      ymat = rbind(ymat, unlist(sim.obj[[comp.name.val]][method.nums]))
-      ystd = rbind(ystd, unlist(sim.obj[[comp.name.std]][method.nums]))
-    }
-
-    # Set the plot name and the colors
-    plot.name[i] = paste0(switch(what,error="err.",prop="pro.",nonzero="nzs."),
-                          file.name[i])
-    cols = rep(cols,length=length(method.nums))
-
-    # Produce the plot
-    pdf(file=sprintf("%s/%s.pdf",fig.dir,plot.name[i]),w,h)
-    par(mar=mar)
-    matplot(xvar, ymat, type="o", pch=19, lty=1, col=cols, log=log,
-            ylim=range(c(ymat-ystd,ymat+ystd)), xlab=xlab, ylab=ylab,
-            main=main[i], cex.main=cex.main)
-    for (k in 1:nrow(ystd)) {
-      segments(xvar[k], ymat[k,]-ystd[k,], xvar[k],
-               ymat[k,]+ystd[k,], lwd=0.5, col=cols)
-    }
+  # Collect the y-variable from the file list
+  yvec = ybar = beta.vec = rho.vec = snr.vec = c()
+  for (i in 1:length(file.list)) {
+    sim.obj = readRDS(file.list[i])
+    beta.vec = c(beta.vec,rep(sim.obj$beta.type,N))
+    rho.vec = c(rho.vec,rep(sim.obj$rho,N))
+    snr.vec = c(snr.vec,rep(sim.obj$snr,N))
     
-    if (legend.pos[i] != "") {
-      legend(legend.pos[i],legend=method.names,col=cols,lty=1)
-    }
-    
-    ## if (pve) {
-    ##   axis(side=3, at=xvar, labels=sprintf("%0.2f",snr.vec/(1+snr.vec)))
-    ##   mtext(side=3, line=2.5, "Proportion of variance explained")
-    ## }
-    ## mtext(side=3, line=4, main[i], cex=cex.main)
-    graphics.off()
-    cat(sprintf("%s/%s.pdf",fig.dir,plot.name[i]),"\n")
-  }
+    z = sim.obj[[switch(what,
+                        error="err.test",
+                        risk="risk",
+                        prop="prop",
+                        nonzero="nzs")]]
+    res = tune.and.aggregate(sim.obj, z)
 
-  # Produce tex lines, if we are asked to
-  if (!is.null(tex.dir)) {
-    stem = get.stem(file.name)
-    tex.name = paste0(switch(what,error="err.",prop="pro.",nonzero="nzs."),
-                      switch(tuning,validation="val.",,oracle="ora."),stem)
-    tex.file = sprintf("%s/%s.tex",tex.dir,tex.name)
-    cat("", file=tex.file, append=FALSE) # Wipe the file
-    frac = 0.32
-    for (i in 1:length(groups)) {
-      cat(sprintf("\\includegraphics[width=%0.2f\\textwidth]{{%s/%s}.pdf}\n",
-                  frac,fig.dir,plot.name[i]), file=tex.file, append=TRUE)
+    # For prop and nonzero we ignore any request for a relative metric
+    if (what=="prop" || what=="nonzero") {
+      yvec = c(yvec,res[[paste0("z.",substr(tuning,1,3),".",type)]])
+      ybar = c(ybar,res[[paste0("z.",substr(tuning,1,3),".",
+                                ifelse(type=="ave","std","mad"))]])
     }
-    cat(tex.file,"\n")
+
+    # For err and risk we respect the request for a relative metric
+    else {
+      # First build the relative metric
+      met = res[[paste0("z.",substr(tuning,1,3))]]
+      if (base.num == 0 && what=="error") denom = sim.obj$err.null
+      else if (base.num == 0 && what=="risk") denom = sim.obj$risk.null
+      else denom = met[[base.num]]
+      z.rel = lapply(met, function(v) v / denom)
+      # Now aggregate the relative metric
+      res2 = tune.and.aggregate(sim.obj, z.rel, tune=FALSE)
+      yvec = c(yvec,unlist(res2[[paste0("z.",type)]]))
+      ybar = c(ybar,unlist(res2[[paste0("z.",ifelse(type=="ave",
+                                                        "std","mad"))]]))
+    }
   }
+  
+  # Set the x-variable and x-label
+  xvec = snr.vec
+  xlab = "Signal-to-noise ratio"
+
+  # Produce the plot
+  beta.vec = factor(beta.vec)
+  rho.vec = factor(rho.vec)
+  snr.vec = factor(snr.vec)
+  levels(beta.vec) = paste("Beta-type", levels(beta.vec))
+  levels(rho.vec) = paste("Correlation", levels(rho.vec))
+  
+  dat = data.frame(x=xvec, y=yvec, se=ybar,
+                   beta=beta.vec, rho=rho.vec, snr=snr.vec,
+                   Methods=factor(rep(method.names, length=length(xvec))))
+
+  gp = ggplot(dat, aes(x=xvec,y=yvec,color=Methods)) +
+    xlab(xlab) + ylab(ylab) +
+    geom_line(lwd=lwd) + geom_point(pch=pch) +
+    facet_grid(formula(paste(row,"~",col))) +
+    theme_bw() + theme(legend.pos="bottom")
+  if (!("snr" %in% c(row,col))) {
+    # If SNR is being plotted on the x-axis in each plot, then define special
+    # x-axis ticks and put the x-axis on a log scale
+    snr.breaks = round(exp(seq(from=min(log(xvec)),
+                               to=max(log(xvec)),length=4)),2)
+    gp = gp + scale_x_continuous(trans="log", breaks=snr.breaks)
+  }
+  if (std) gp = gp + geom_errorbar(aes(ymin=yvec-se,ymax=yvec+se), width=0.02)
+  if (!is.null(main)) gp = gp + ggtitle(main) 
+  if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
+                       height=h, width=w, device="pdf")
+  else gp
 }
 
 get.stem = function(str.vec) {

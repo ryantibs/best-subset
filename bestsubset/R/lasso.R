@@ -65,21 +65,21 @@ lasso = function(x, y, alpha=1, nrelax=1, nlambda=50,
 #' @export coef.lasso
 #' @export
 
-coef.lasso = function(object, s=NULL) {
+coef.lasso = function(object, s=NULL, gamma=NULL) {
   beta.lasso = coef.lasso.from.glmnet(object,s)
-  if (object$nrelax == 1) {
+  if (object$nrelax == 1 && is.null(gamma)) {
     if (object$intercept) return(beta.lasso)
     else return(beta.lasso[-1,])
   }
-
+  if (is.null(gamma)) gamma = seq(1,0,length=object$nrelax)
+  
   beta.ls = coef.ls(beta.lasso,object$x,object$y)
-  gamma = seq(1,0,length=object$nrelax)
   beta.left = matrix(apply(beta.lasso,2,function(b){b%o%gamma}),
                      nrow=nrow(beta.lasso))
   beta.right = matrix(apply(beta.ls,2,function(b){b%o%(1-gamma)}),
                       nrow=nrow(beta.lasso))
   beta.mat = beta.left + beta.right
-
+  
   if (object$intercept) return(beta.mat)
   else return(beta.mat[-1,])
 }
@@ -124,6 +124,7 @@ coef.ls = function(beta, x, y) {
 #' @export
 
 predict.lasso = function(object, newx, s=NULL) {
+  if (missing(newx)) newx = object$x
   if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
   return(newx %*% coef.lasso(object,s))
 }

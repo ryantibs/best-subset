@@ -4,11 +4,14 @@
 \alias{print.sim}
 \title{Print function for sim object.}
 \usage{
-\method{print}{sim}(x, type = c("ave", "med"), std = TRUE, digits = 3,
-  ...)
+\method{print}{sim}(x, what = c("error", "risk"), type = c("ave", "med"),
+  std = TRUE, digits = 3, ...)
 }
 \arguments{
 \item{x}{The sim object.}
+
+\item{what}{Either "error" or "risk", indicating whether the relative test
+error or relative risk should be displayed. Default is "error".}
 
 \item{type}{Either "ave" or "med", indicating whether the average or median
 of the relative test error metric should be displayed. Default is "ave".}
@@ -22,7 +25,7 @@ standard errors. Default is TRUE.}
 \item{...}{Other arguments (currently not used).}
 }
 \description{
-Summarize and print the results of a set of simulations, stored an object
+Summarize and print the results of a set of simulations, stored in an object 
   of class sim (produced by \code{\link{sim.master}}).
 }
 

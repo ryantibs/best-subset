@@ -5,7 +5,7 @@ Version: 1.0.4
 Date: 2017-04-22
 Author: Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 Maintainer: Ryan Tibshirani <ryantibs@stat.cmu.edu>
-Depends: glmnet, gurobi
+Depends: ggplot2, glmnet, gurobi
 Description: An implementation of best subset selection in regression based on a
   mixed integer quadratic program formulation of the subset selection problem,
   and the Gurobi mixed integer program optimizer; also, tools for running

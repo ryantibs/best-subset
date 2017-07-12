@@ -43,23 +43,14 @@ intermediate saving. Defaults are NULL and 5, respectively.}
 \item{Number}{of repetitions of which to average the results. Default is 50.}
 }
 \value{
-A list with components err.train, err.val, err.test, err.rel, prop,
-  risk, nzs, opt for the training error, validation error, test error,
-  relative test error (test error divided by sigma^2), test proportion of
-  variance explained, risk, number of selected nonzero coefficients, and
+A list with components err.train, err.val, err.test, prop, risk, nzs,
+  opt for the training error, validation error, test error, test proportion
+  of variance explained, risk, number of selected nonzero coefficients, and
   relative optimism (difference in test error and training error, divided by
   training error). These are each lists of length N, where N is the number of
   regression methods under consideration (the length of reg.funs). The ith
-  element of each list is then a matrix of dimension nrep x m, where m is
-  the number of tuning parameters inherent to the ith method. The returned
-  components err.train.ave, err.val.ave, etc. return the average of the
-  training errors, validation errors, etc. over the nrep repetitions.
-  Similarly for the components with postfixes .std, .med, .mad, which return
-  the standard deviation, median, and median absolute deviation. The returned
-  components with postfixes .tun.val and .tun.orc are each lists of length N,
-  which return the appropriate metric when the tuning parameter for each
-  regression method in each repetition is chosen by validation tuning (best
-  validation error) or by oracle tuning (best test error).
+  element of each list is then a matrix of dimension nrep x m, where m is the
+  number of tuning parameters inherent to the ith method.
 }
 \description{
 Run a set of simulations with the specified configuration.

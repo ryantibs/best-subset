@@ -1,0 +1,62 @@
+\documentclass{article}
+
+\usepackage[left=1.25in,top=1.25in,right=1.25in,bottom=1.25in,head=1.25in]{geometry}
+\usepackage{graphicx}
+
+\begin{document}
+\begin{figure}[p]
+\centering
+{\Large\bf Validation tuning, relative risk (to null risk)} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.risk.rel}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Validation tuning, relative test error (to best subset)} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.err.rel}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Validation tuning, proportion of variance explained} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.prop}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Validation tuning, number of nonzero coefficients} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.nzs}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Oracle tuning, relative risk (to null risk)} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.risk.rel}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Oracle tuning, relative test error (to best subset)} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.err.rel}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Oracle tuning, proportion of variance explained} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.prop}.pdf}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+{\Large\bf Oracle tuning, number of nonzero coefficients} \\
+\bigskip
+\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.nzs}.pdf}
+\end{figure}
+\end{document}
