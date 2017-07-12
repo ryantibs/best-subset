@@ -136,9 +136,9 @@ plot.from.file = function(file.list,
   
   dat = data.frame(x=xvec, y=yvec, se=ybar,
                    beta=beta.vec, rho=rho.vec, snr=snr.vec,
-                   Methods=factor(rep(method.names, length=length(xvec))))
+                   Method=factor(rep(method.names, length=length(xvec))))
 
-  gp = ggplot(dat, aes(x=xvec,y=yvec,color=Methods)) +
+  gp = ggplot(dat, aes(x=xvec,y=yvec,color=Method)) +
     xlab(xlab) + ylab(ylab) +
     geom_line(lwd=lwd) + geom_point(pch=pch) +
     facet_grid(formula(paste(row,"~",col))) +

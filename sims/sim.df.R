@@ -76,10 +76,10 @@ load("sim.df.rda")
 # Plot the results
 dat = data.frame(x=rep(0:p,3),
                  y=c(df.bs,df.fs,df.las[,1]),
-                 Methods=factor(rep(c("Best subset","Forward stepwise","Lasso"),
+                 Method=factor(rep(c("Best subset","Forward stepwise","Lasso"),
                                     rep(p+1,3))))
 
-ggplot(dat, aes(x=x,y=y,color=Methods)) +
+ggplot(dat, aes(x=x,y=y,color=Method)) +
   xlab("Number of nonzero coefficients") +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +
@@ -89,11 +89,11 @@ ggsave("df1.pdf", height=4, width=4, device="pdf")
 
 dat = data.frame(x=rep(0:p,5),
                  y=c(df.bs,df.fs,df.las[,1],df.las[,5],df.las[,9]),
-                 Methods=factor(rep(c("Best subset","Forward stepwise","Lasso",
+                 Method=factor(rep(c("Best subset","Forward stepwise","Lasso",
                                       "Relaxed lasso: 0","Relaxed lasso: 0.5"),
                                     rep(p+1,5))))
 
-ggplot(dat, aes(x=x,y=y,color=Methods)) +
+ggplot(dat, aes(x=x,y=y,color=Method)) +
   xlab("Number of nonzero coefficients") +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +

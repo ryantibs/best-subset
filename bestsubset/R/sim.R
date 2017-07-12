@@ -525,10 +525,10 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
   dat = data.frame(x=unlist(xlist[ii]),
                    y=unlist(ylist[ii]),
                    se=unlist(ybars[ii]),
-                   Methods=factor(rep(method.names,
+                   Method=factor(rep(method.names,
                                       lapply(xlist[ii],length))))
   
-  gp = ggplot(dat, aes(x=x,y=y,color=Methods)) +
+  gp = ggplot(dat, aes(x=x,y=y,color=Method)) +
     xlab("Number of nonzero coefficients") +
     ylab(paste("Relative",ifelse(what=="error","test error","risk"))) +
     geom_line(lwd=lwd) + geom_point(pch=pch) + theme_bw()
