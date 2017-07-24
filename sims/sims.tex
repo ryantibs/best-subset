@@ -1,62 +1,249 @@
 \documentclass{article}
 
 \usepackage[left=1.25in,top=1.25in,right=1.25in,bottom=1.25in,head=1.25in]{geometry}
+\usepackage[colorlinks=true,citecolor=blue,urlcolor=blue,linkcolor=blue]{hyperref}
 \usepackage{graphicx}
+\usepackage{sectsty}
+
+\sectionfont{\fontsize{16}{0}\selectfont}
+\subsectionfont{\fontsize{14}{0}\selectfont}
+\subsubsectionfont{\fontsize{12}{0}\selectfont}
 
 \begin{document}
-\begin{figure}[p]
-\centering
-{\Large\bf Validation tuning, relative risk (to null risk)} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.risk.rel}.pdf}
-\end{figure}
 
-\begin{figure}[p]
-\centering
-{\Large\bf Validation tuning, relative test error (to best subset)} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.err.rel}.pdf}
-\end{figure}
+\tableofcontents
+\newpage
 
-\begin{figure}[p]
+\section{Validation tuning}\vspace{-3pt}
+\subsection{Low setting: $n=100$, $p=10$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
 \centering
-{\Large\bf Validation tuning, proportion of variance explained} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.prop}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p10.val.risk.rel}.pdf}
 \end{figure}
+\newpage
 
-\begin{figure}[p]
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
 \centering
-{\Large\bf Validation tuning, number of nonzero coefficients} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/val/{sim.n100.p10.val.nzs}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p10.val.err.rel}.pdf}
 \end{figure}
+\newpage
 
-\begin{figure}[p]
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
 \centering
-{\Large\bf Oracle tuning, relative risk (to null risk)} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.risk.rel}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p10.val.prop}.pdf}
 \end{figure}
+\newpage
 
-\begin{figure}[p]
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
 \centering
-{\Large\bf Oracle tuning, relative test error (to best subset)} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.err.rel}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p10.val.nzs}.pdf}
 \end{figure}
+\newpage
 
-\begin{figure}[p]
+\subsection{Medium setting: $n=500$, $p=100$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
 \centering
-{\Large\bf Oracle tuning, proportion of variance explained} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.prop}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n500.p100.val.risk.rel}.pdf}
 \end{figure}
+\newpage
 
-\begin{figure}[p]
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
 \centering
-{\Large\bf Oracle tuning, number of nonzero coefficients} \\
-\bigskip
-\includegraphics[width=\textwidth]{fig/ora/{sim.n100.p10.ora.nzs}.pdf}
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n500.p100.val.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n500.p100.val.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n500.p100.val.nzs}.pdf}
+\end{figure}
+\newpage
+
+\subsection{High-5 setting: $n=50$, $p=1000$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n50.p1000.val.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n50.p1000.val.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n50.p1000.val.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n50.p1000.val.nzs}.pdf}
+\end{figure}
+\newpage
+
+\subsection{High-10 setting: $n=100$, $p=1000$, $s=10$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p1000.val.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p1000.val.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p1000.val.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/val/{sim.n100.p1000.val.nzs}.pdf}
+\end{figure}
+\newpage
+
+\section{Oracle tuning}\vspace{-3pt}
+\subsection{Low setting: $n=100$, $p=10$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p10.ora.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p10.ora.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p10.ora.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p10.ora.nzs}.pdf}
+\end{figure}
+\newpage
+
+\subsection{Medium setting: $n=500$, $p=100$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n500.p100.ora.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n500.p100.ora.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n500.p100.ora.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n500.p100.ora.nzs}.pdf}
+\end{figure}
+\newpage
+
+\subsection{High-5 setting: $n=50$, $p=1000$, $s=5$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n50.p1000.ora.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n50.p1000.ora.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n50.p1000.ora.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n50.p1000.ora.nzs}.pdf}
+\end{figure}
+\newpage
+
+\subsection{High-10 setting: $n=100$, $p=1000$, $s=10$} 
+\subsubsection{Relative risk (to null risk)} 
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p1000.ora.risk.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Relative test error (to best subset)}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p1000.ora.err.rel}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Proportion of variance explained}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p1000.ora.prop}.pdf}
+\end{figure}
+\newpage
+
+\subsubsection{Number of nonzero coefficients}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.99\textwidth]{fig/ora/{sim.n100.p1000.ora.nzs}.pdf}
 \end{figure}
 \end{document}

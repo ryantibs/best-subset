@@ -92,7 +92,7 @@ plot.from.file = function(file.list,
     beta.vec = c(beta.vec,rep(sim.obj$beta.type,N))
     rho.vec = c(rho.vec,rep(sim.obj$rho,N))
     snr.vec = c(snr.vec,rep(sim.obj$snr,N))
-    
+
     z = sim.obj[[switch(what,
                         error="err.test",
                         risk="risk",
@@ -102,15 +102,15 @@ plot.from.file = function(file.list,
 
     # For prop and nonzero we ignore any request for a relative metric
     if (what=="prop" || what=="nonzero") {
-      yvec = c(yvec,res[[paste0("z.",substr(tuning,1,3),".",type)]])
+      yvec = c(yvec,res[[paste0("z.",substr(tuning,1,3),".",type)]][method.nums])
       ybar = c(ybar,res[[paste0("z.",substr(tuning,1,3),".",
-                                ifelse(type=="ave","std","mad"))]])
+                                ifelse(type=="ave","std","mad"))]][method.nums])
     }
 
     # For err and risk we respect the request for a relative metric
     else {
       # First build the relative metric
-      met = res[[paste0("z.",substr(tuning,1,3))]]
+      met = res[[paste0("z.",substr(tuning,1,3))]][method.nums]
       if (base.num == 0 && what=="error") denom = sim.obj$err.null
       else if (base.num == 0 && what=="risk") denom = sim.obj$risk.null
       else denom = met[[base.num]]
@@ -151,6 +151,10 @@ plot.from.file = function(file.list,
     gp = gp + scale_x_continuous(trans="log", breaks=snr.breaks)
   }
   if (std) gp = gp + geom_errorbar(aes(ymin=yvec-se,ymax=yvec+se), width=0.02)
+  if (what=="prop") gp = gp + geom_line(aes(x=xvec, y=xvec/(1+xvec)), lwd=0.5,
+                                        linetype=3, color="black")
+  if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
+                                            linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main) 
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")

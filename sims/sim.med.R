@@ -1,5 +1,6 @@
-## Low-dimensional simulation, n=100 and p=10
+## Medium-dimensional simulation, n=500 and p=100
 library(bestsubset)
+glmnet.control(fdev=0)
 
 # Set some overall simulation parameters
 n = 500; p = 100 # Size of training set, and number of predictors
@@ -13,15 +14,15 @@ stem = paste0("sim.n",n,".p",p)
 
 # Regression functions: lasso, forward stepwise, and best subset selection
 reg.funs = list()
-reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
-reg.funs[["Stepwise"]] = function(x,y) fs(x,y,intercept=FALSE,max=50)
-reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=1:50,
-                                             time.limit=3600)
+reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=100)
+reg.funs[["Forward stepwise"]] = function(x,y) fs(x,y,intercept=FALSE,
+                                                  max=50)
+reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=0:50,
+                                             time.limit=180)
 reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
-                                                  nrelax=10,nlam=50)
+                                                  nrelax=10,nlam=100)
 
 file.list = c() # Vector of files for the saved rds files
-file.name = c() # Vector of file names for the plots 
 for (beta.type in type.vec) {
   for (rho in rho.vec) {
     name = paste0(stem, ".beta", beta.type, sprintf(".rho%0.2f", rho))
@@ -31,36 +32,70 @@ for (beta.type in type.vec) {
       cat("--------------------------\n")
       cat(paste0("File: ", file, "\n\n"))
       
-      sim.master(n, p, nval, reg.funs=reg.funs, nrep=nrep, seed=seed,           
+      sim.master(n, p, nval, reg.funs=reg.funs, nrep=nrep, seed=seed,
                  verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
       
       file.list = c(file.list, file)
       cat("\n")
     }
-    file.name = c(file.name, name)
   }
 }
-
-grouping = rep(as.numeric(outer(1:length(rho.vec),10*1:length(type.vec),"+")),
-               each=length(snr.vec))
-main = paste0(rep(paste0("Setting ", type.vec), each=length(rho.vec)),
-              rep(paste0(", rho = ", rho.vec), times=length(type.vec)))
-save(list=ls(), file=paste0("rds/",stem,".rda"))
 
 ##############################
 # Run the code below to reproduce the figures without rerunning the sims
 
 library(bestsubset)
-load(file="rds/sim.n500.p100.rda")
+n = 500; p = 100
+file.list = system(paste0("ls rds/sim.n",n,".p",p,".*.rds"),intern=TRUE)
+method.nums = c(3,2,1,4)
+method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 
 # Validation tuning
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err",  tuning="val",
-               fig.dir="fig/val", file.name=file.name, main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non",  tuning="val",
-               fig.dir="fig/val", file.name=file.name, main=main, tex.dir="tex")
+plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/val",
+               file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
+
+plot.from.file(file.list, what="error", rel.to=3, tuning="val",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/val", 
+               file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
+
+plot.from.file(file.list, what="prop", tuning="val",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/val", 
+               file.name=paste0("sim.n",n,".p",p,".val.prop"))
+
+plot.from.file(file.list, what="nonzero", tuning="val",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/val", 
+               file.name=paste0("sim.n",n,".p",p,".val.nzs"))
 
 # Oracle tuning
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="err", tuning="ora",
-               fig.dir="fig/ora", file.name=file.name, main=main, tex.dir="tex")
-plot.many.sims(file.list, grouping, snr.vec=snr.vec, what="non", tuning="ora",
-               fig.dir="fig/ora", file.name=file.name, main=main, tex.dir="tex")
+plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/ora", 
+               file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
+
+plot.from.file(file.list, what="error", rel.to=3, tuning="ora",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/ora", 
+               file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
+
+plot.from.file(file.list, what="prop", tuning="ora",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/ora", 
+               file.name=paste0("sim.n",n,".p",p,".ora.prop"))
+
+plot.from.file(file.list, what="nonzero", tuning="ora",
+               method.nums=method.nums, method.names=method.names,
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/ora", 
+               file.name=paste0("sim.n",n,".p",p,".ora.nzs"))

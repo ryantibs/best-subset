@@ -39,13 +39,12 @@ for (beta.type in type.vec) {
   }
 }
 
-save(list=ls(), file=paste0("rds/",stem,".rda"))
-
 ##############################
 # Run the code below to reproduce the figures without rerunning the sims
 
 library(bestsubset)
-load(file="rds/sim.n100.p10.rda")
+n = 100; p = 10
+file.list = system(paste0("ls rds/sim.n",n,".p",p,".*.rds"),intern=TRUE)
 method.nums = c(3,2,1,4)
 method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 
@@ -57,37 +56,44 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
                file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=3, tuning="val",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="val",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="val",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.nzs"))
 
 # Oracle tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=3, tuning="ora",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="ora",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="ora",
+               method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.nzs"))
