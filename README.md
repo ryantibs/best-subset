@@ -1,4 +1,4 @@
-# Best Subset Selection Tools
+# Best Subset Selection and Related Tools
 ## Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 ### Maintained by Ryan Tibshirani
 

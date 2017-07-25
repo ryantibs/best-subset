@@ -30,13 +30,13 @@
 #' @param std Should standard errors be displayed (in parantheses)? When type
 #'   is set to "med", the median absolute deviations are shown in place of the
 #'   standard errors. Default is TRUE.
-#' @param lwd,pch,main graphical parameters.
+#' @param lwd,pch,main,ylim graphical parameters.
 #' @param make.pdf Should a pdf be produced? Default is FALSE.
 #' @param fig.dir,file.name The figure directory and file name to use, only
 #'   when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
 #'   is always appended to the given file name.)
 #' @param w,h the width and height (in inches) for the plot, used only when
-#'   make.pdf is TRUE. Defaults are 6 for both.
+#'   make.pdf is TRUE. Defaults are 8 and 10, respectively.
 #'
 #' @export plot.from.file
 
@@ -45,8 +45,9 @@ plot.from.file = function(file.list,
                           method.nums=NULL, method.names=NULL,
                           what=c("error","risk","prop","nonzero"), rel.to=NULL,
                           tuning=c("validation","oracle"), type=c("ave","med"),
-                          std=TRUE, lwd=1, pch=19, main=NULL, make.pdf=FALSE,
-                          fig.dir=".", file.name="sim", w=8, h=10) {
+                          std=TRUE, lwd=1, pch=19, main=NULL, ylim=NULL,
+                          make.pdf=FALSE, fig.dir=".", file.name="sim",
+                          w=8, h=10) {
 
   # Check for ggplot2 package
   if (!require("ggplot2",quietly=TRUE)) {
@@ -155,7 +156,8 @@ plot.from.file = function(file.list,
                                         linetype=3, color="black")
   if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
-  if (!is.null(main)) gp = gp + ggtitle(main) 
+  if (!is.null(main)) gp = gp + ggtitle(main)
+  if (!is.null(ylim)) gp = gp + coord_cartesian(ylim=ylim)
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")
   else gp

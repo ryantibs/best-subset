@@ -23,6 +23,9 @@ reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=1:50,
 reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=10,nlam=100)
 
+## NOTE: the loop below was not run in serial, it was in fact was split up
+## and run on a Linux cluster
+
 file.list = c() # Vector of files for the saved rds files
 for (beta.type in type.vec) {
   for (rho in rho.vec) {
@@ -56,14 +59,14 @@ method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 # Validation tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
-               fig.dir="fig/val",
+               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0,3.5),
+               make.pdf=TRUE, fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=3, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
-               fig.dir="fig/val", 
+               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0.5,1.5),
+               make.pdf=TRUE, fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="val",
@@ -87,8 +90,8 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
 
 plot.from.file(file.list, what="error", rel.to=3, tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
-               fig.dir="fig/ora", 
+               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0.5,1.5),
+               make.pdf=TRUE, fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="ora",

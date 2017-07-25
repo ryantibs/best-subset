@@ -22,6 +22,9 @@ reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=0:50,
 reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=10,nlam=100)
 
+## NOTE: the loop below was not run in serial, it was in fact was split up
+## and run on a Linux cluster
+
 file.list = c() # Vector of files for the saved rds files
 for (beta.type in type.vec) {
   for (rho in rho.vec) {

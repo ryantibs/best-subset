@@ -8,8 +8,8 @@
   col = c("rho", "beta", "snr"), method.nums = NULL, method.names = NULL,
   what = c("error", "risk", "prop", "nonzero"), rel.to = NULL,
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
-  lwd = 1, pch = 19, main = NULL, make.pdf = FALSE, fig.dir = ".",
-  file.name = "sim", w = 8, h = 10)
+  lwd = 1, pch = 19, main = NULL, ylim = NULL, make.pdf = FALSE,
+  fig.dir = ".", file.name = "sim", w = 8, h = 10)
 }
 \arguments{
 \item{file.list}{Vector of strings that point to saved sim objects (each
@@ -47,7 +47,7 @@ displayed. Default is "ave".}
 is set to "med", the median absolute deviations are shown in place of the
 standard errors. Default is TRUE.}
 
-\item{lwd, pch, main}{graphical parameters.}
+\item{lwd, pch, main, ylim}{graphical parameters.}
 
 \item{make.pdf}{Should a pdf be produced? Default is FALSE.}
 
@@ -56,7 +56,7 @@ when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
 is always appended to the given file name.)}
 
 \item{w, h}{the width and height (in inches) for the plot, used only when
-make.pdf is TRUE. Defaults are 6 for both.}
+make.pdf is TRUE. Defaults are 8 and 10, respectively.}
 }
 \description{
 Plot results over several sets of simulations saved in files, where the same
