@@ -63,7 +63,7 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
                fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
 
-plot.from.file(file.list, what="error", rel.to=3, tuning="val",
+plot.from.file(file.list, what="error", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/val", 
@@ -88,7 +88,7 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
 
-plot.from.file(file.list, what="error", rel.to=3, tuning="ora",
+plot.from.file(file.list, what="error", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
                fig.dir="fig/ora", 

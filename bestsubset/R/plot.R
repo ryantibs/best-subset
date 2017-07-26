@@ -15,11 +15,17 @@
 #'   is NULL, in which case all methods are plotted.
 #' @param method.names The names of the methods that should be plotted. Default
 #'   is NULL, in which case the names are extracted from the sim objects.
-#' @param what One of "error", "risk", "prop", or "nonzero", indicating whether to plot
-#'   the relative test error, test proportion of variance explained, or number
-#'   of nonzeros, for each method across the given SNR levels. When what is
-#'   "prop", the x-axis is population proportion of variance explained, instead
-#'   of SNR. Default is "error". 
+#' @param what One of "error", "risk", "prop", or "nonzero", indicating whether
+#'   to plot the relative test error, test proportion of variance explained, or
+#'   number of nonzeros, for each method across the given SNR levels. When what
+#'   is "prop", the x-axis is population proportion of variance explained,
+#'   instead of SNR. Default is "error".
+#' @param rel.to An index for a base method: when the what argument is "error"
+#'   or "risk", the rel.to argument specifies the method with respect to which
+#'   the relative error or relative risk is calculated. The default value of
+#'   NULL means different things when what is equal to "error" and "risk". In
+#'   the former case, the test error is calculated relative to the oracle; in
+#'   the latter, the risk is calculated relative to the null model.
 #' @param tuning Either "validation" or "oracle", indicating whether the tuning
 #'   parameter for each method should be chosen according to minimizing
 #'   validation error, or according to minimizing test error. Default is
@@ -30,7 +36,7 @@
 #' @param std Should standard errors be displayed (in parantheses)? When type
 #'   is set to "med", the median absolute deviations are shown in place of the
 #'   standard errors. Default is TRUE.
-#' @param lwd,pch,main,ylim graphical parameters.
+#' @param lwd,pch,main,ylim,legend.pos graphical parameters.
 #' @param make.pdf Should a pdf be produced? Default is FALSE.
 #' @param fig.dir,file.name The figure directory and file name to use, only
 #'   when make.pdf is TRUE. Defaults are "." and "sim". (An extension of "pdf"
@@ -46,6 +52,7 @@ plot.from.file = function(file.list,
                           what=c("error","risk","prop","nonzero"), rel.to=NULL,
                           tuning=c("validation","oracle"), type=c("ave","med"),
                           std=TRUE, lwd=1, pch=19, main=NULL, ylim=NULL,
+                          legend.pos=c("bottom","right","top","left","none"),
                           make.pdf=FALSE, fig.dir=".", file.name="sim",
                           w=8, h=10) {
 
@@ -57,11 +64,12 @@ plot.from.file = function(file.list,
   row = match.arg(row)
   col = match.arg(col)
   if (row==col) stop("row and col must be different")
-  
+
   what = match.arg(what)
   tuning = match.arg(tuning)
   type = match.arg(type)
-
+  legend.pos = match.arg(legend.pos)
+  
   # Set the method numbers and names
   sim.obj = readRDS(file.list[1])
   if (is.null(method.nums)) method.nums = 1:length(sim.obj$err.test)
@@ -72,7 +80,7 @@ plot.from.file = function(file.list,
   # Set the base number and name
   if (is.null(rel.to)) {
     base.num = 0
-    base.name = "null"
+    base.name = ifelse(what=="error","Bayes","null model")
   }
   else {
     base.num = which(method.nums==rel.to)
@@ -112,7 +120,7 @@ plot.from.file = function(file.list,
     else {
       # First build the relative metric
       met = res[[paste0("z.",substr(tuning,1,3))]][method.nums]
-      if (base.num == 0 && what=="error") denom = sim.obj$err.null
+      if (base.num == 0 && what=="error") denom = sim.obj$sigma^2
       else if (base.num == 0 && what=="risk") denom = sim.obj$risk.null
       else denom = met[[base.num]]
       z.rel = lapply(met, function(v) v / denom)
@@ -128,6 +136,9 @@ plot.from.file = function(file.list,
   xvec = snr.vec
   xlab = "Signal-to-noise ratio"
 
+  # Set the y-limits
+  if (is.null(ylim)) ylim = range(yvec-ybar, yvec+ybar)
+  
   # Produce the plot
   beta.vec = factor(beta.vec)
   rho.vec = factor(rho.vec)
@@ -140,10 +151,10 @@ plot.from.file = function(file.list,
                    Method=factor(rep(method.names, length=length(xvec))))
 
   gp = ggplot(dat, aes(x=xvec,y=yvec,color=Method)) +
-    xlab(xlab) + ylab(ylab) +
+    xlab(xlab) + ylab(ylab) + coord_cartesian(ylim=ylim) +
     geom_line(lwd=lwd) + geom_point(pch=pch) +
     facet_grid(formula(paste(row,"~",col))) +
-    theme_bw() + theme(legend.pos="bottom")
+    theme_bw() + theme(legend.pos=legend.pos)
   if (!("snr" %in% c(row,col))) {
     # If SNR is being plotted on the x-axis in each plot, then define special
     # x-axis ticks and put the x-axis on a log scale
@@ -152,12 +163,14 @@ plot.from.file = function(file.list,
     gp = gp + scale_x_continuous(trans="log", breaks=snr.breaks)
   }
   if (std) gp = gp + geom_errorbar(aes(ymin=yvec-se,ymax=yvec+se), width=0.02)
+  if (what=="error") gp = gp + geom_line(aes(x=xvec, y=1+xvec), lwd=0.5,
+                                         linetype=3, color="black")
   if (what=="prop") gp = gp + geom_line(aes(x=xvec, y=xvec/(1+xvec)), lwd=0.5,
                                         linetype=3, color="black")
   if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main)
-  if (!is.null(ylim)) gp = gp + coord_cartesian(ylim=ylim)
+  if (!is.null(ylim)) gp = gp + 
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")
   else gp

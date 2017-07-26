@@ -59,14 +59,14 @@ method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 # Validation tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0,3.5),
+               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0,6.25),
                make.pdf=TRUE, fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
 
-plot.from.file(file.list, what="error", rel.to=3, tuning="val",
+plot.from.file(file.list, what="error", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0.5,1.5),
-               make.pdf=TRUE, fig.dir="fig/val", 
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="val",
@@ -88,10 +88,10 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
 
-plot.from.file(file.list, what="error", rel.to=3, tuning="ora",
+plot.from.file(file.list, what="error", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), ylim=c(0.5,1.5),
-               make.pdf=TRUE, fig.dir="fig/ora", 
+               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="ora",

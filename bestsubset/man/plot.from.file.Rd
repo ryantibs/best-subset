@@ -8,8 +8,9 @@
   col = c("rho", "beta", "snr"), method.nums = NULL, method.names = NULL,
   what = c("error", "risk", "prop", "nonzero"), rel.to = NULL,
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
-  lwd = 1, pch = 19, main = NULL, ylim = NULL, make.pdf = FALSE,
-  fig.dir = ".", file.name = "sim", w = 8, h = 10)
+  lwd = 1, pch = 19, main = NULL, ylim = NULL,
+  legend.pos = c("bottom", "right", "top", "left", "none"),
+  make.pdf = FALSE, fig.dir = ".", file.name = "sim", w = 8, h = 10)
 }
 \arguments{
 \item{file.list}{Vector of strings that point to saved sim objects (each
@@ -28,11 +29,18 @@ is NULL, in which case all methods are plotted.}
 \item{method.names}{The names of the methods that should be plotted. Default
 is NULL, in which case the names are extracted from the sim objects.}
 
-\item{what}{One of "error", "risk", "prop", or "nonzero", indicating whether to plot
-the relative test error, test proportion of variance explained, or number
-of nonzeros, for each method across the given SNR levels. When what is
-"prop", the x-axis is population proportion of variance explained, instead
-of SNR. Default is "error".}
+\item{what}{One of "error", "risk", "prop", or "nonzero", indicating whether
+to plot the relative test error, test proportion of variance explained, or
+number of nonzeros, for each method across the given SNR levels. When what
+is "prop", the x-axis is population proportion of variance explained,
+instead of SNR. Default is "error".}
+
+\item{rel.to}{An index for a base method: when the what argument is "error"
+or "risk", the rel.to argument specifies the method with respect to which
+the relative error or relative risk is calculated. The default value of
+NULL means different things when what is equal to "error" and "risk". In
+the former case, the test error is calculated relative to the oracle; in
+the latter, the risk is calculated relative to the null model.}
 
 \item{tuning}{Either "validation" or "oracle", indicating whether the tuning
 parameter for each method should be chosen according to minimizing
@@ -47,7 +55,7 @@ displayed. Default is "ave".}
 is set to "med", the median absolute deviations are shown in place of the
 standard errors. Default is TRUE.}
 
-\item{lwd, pch, main, ylim}{graphical parameters.}
+\item{lwd, pch, main, ylim, legend.pos}{graphical parameters.}
 
 \item{make.pdf}{Should a pdf be produced? Default is FALSE.}
 
