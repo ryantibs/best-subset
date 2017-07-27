@@ -530,7 +530,9 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
   
   gp = ggplot(dat, aes(x=x,y=y,color=Method)) +
     xlab("Number of nonzero coefficients") +
-    ylab(paste("Relative",ifelse(what=="error","test error","risk"))) +
+    ylab(ifelse(what=="error",
+                "Relative test error (to Bayes)",
+                "Relative risk (to null model)")) +
     geom_line(lwd=lwd) + geom_point(pch=pch) + theme_bw()
   if (std) gp = gp + geom_errorbar(aes(ymin=y-se,ymax=y+se), width=0.2)
   if (!is.null(main)) gp = gp + ggtitle(main) 

@@ -15,7 +15,26 @@ nrep = 20
 reg.funs = list()
 reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE)
 reg.funs[["Forward stepwise"]] = function(x,y) fs(x,y,intercept=FALSE)
-reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=50)
+
+# We use a bit of a hack here to get the lasso to return only one solution
+# of each size k=0,...,p: for each k, we take the last solution along it
+# encounters along the path
+reg.funs[["Lasso"]] = function(x,y) {
+  out = lasso(x,y,intercept=FALSE,nlam=300)
+  class(out) = "lasso2"; return(out)
+}
+# Now define custom coef and predict functions: where the hacking happens
+coef.lasso2 = function(object, s=NULL, gamma=NULL) {
+  beta = as.matrix(coef.lasso(object,s,gamma))
+  nzs = colSums(beta != 0)
+  j = nlam - rev(match(p:0, rev(nzs), NA))
+  return(beta[,j])
+}
+predict.lasso2 = function(object, newx, s=NULL) {
+  if (missing(newx)) newx = object$x
+  if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
+  return(newx %*% coef.lasso2(object,s))
+}
 
 # Run the master simulation functions at (snr,rho) = (0.35,0.7) (hard setting)
 # and (snr,rho) = (0,2) (easy setting)
@@ -25,9 +44,9 @@ sim.obj.hisnr = sim.master(n,p,nval,reg.funs=reg.funs,nrep=nrep,seed=seed,
                            rho=0.00,s=s,beta.type=beta.type,snr=2.0,verbose=TRUE)
 
 plot(sim.obj.losnr, what="risk", main="SNR=0.7, Cor=0.35", legend=FALSE,
-     make.pdf=TRUE, file.name="snr.lo", h=4, w=4)
+     make.pdf=TRUE, fig.dir="fig", file.name="snr.lo", h=4, w=4)
 plot(sim.obj.hisnr, what="risk", main="SNR=2.0, Cor=0.00", make.pdf=TRUE,
-     file.name="snr.hi", h=4, w=5.5)
+     fig.dir="fig", file.name="snr.hi", h=4, w=5.5)
 
 ## Degrees of freedom simulation
 # Note this is a "hand-made" simulation (rather than using built-in functions
@@ -71,7 +90,7 @@ save(list=ls(),file="sim.df.rda")
 ##############################
 # Run the code below to reproduce the df figure without rerunning the sims
 library(bestsubset)
-load("sim.df.rda")
+load("rds/sim.df.rda")
 
 # Plot the results
 dat = data.frame(x=rep(0:p,3),
@@ -84,13 +103,13 @@ ggplot(dat, aes(x=x,y=y,color=Method)) +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +
   geom_line(lwd=1) + geom_point(pch=19) +
-  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(1,0)) 
-ggsave("df1.pdf", height=4, width=4, device="pdf")
+  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05)) 
+ggsave("fig/df1.pdf", height=4, width=4, device="pdf")
 
 dat = data.frame(x=rep(0:p,5),
                  y=c(df.bs,df.fs,df.las[,1],df.las[,5],df.las[,9]),
                  Method=factor(rep(c("Best subset","Forward stepwise","Lasso",
-                                      "Relaxed lasso: 0","Relaxed lasso: 0.5"),
+                                      "Relaxed lasso: 0.5","Relaxed lasso: 0"),
                                     rep(p+1,5))))
 
 ggplot(dat, aes(x=x,y=y,color=Method)) +
@@ -98,6 +117,6 @@ ggplot(dat, aes(x=x,y=y,color=Method)) +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +
   geom_line(lwd=1) + geom_point(pch=19) + 
-  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(1,0)) 
-ggsave("df2.pdf", height=4, width=4, device="pdf")
+  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05)) 
+ggsave("fig/df2.pdf", height=4, width=4, device="pdf")
 
