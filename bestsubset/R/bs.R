@@ -308,7 +308,8 @@ coef.bs = function(object, s, ...) {
   # when s is a scalar, beta.mat is not a matrix
   # it causes a bug since ncol(beta.mat) = NULL when beta.mat is a numeric vector
   beta.mat = as.matrix( object$beta[,ind] )
-  if (object$intercept) return(rbind(rep(object$bu,ncol(beta.mat)),beta.mat))
+  u = object$bu[ind]
+  if (object$intercept) return(rbind(u,beta.mat))
   else return(beta.mat)
 }
 
