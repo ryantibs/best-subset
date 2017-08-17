@@ -136,7 +136,7 @@ bs = function(x, y, k=0:min(nrow(x),ncol(x)), intercept=TRUE,
   # Compute the mean of residual U
   # In the original code, the intercept is just the mean of the response variable of all observations
   # I think it should be the average of the mean of residual
-  bu = colMeans( matrix(y0, nrow = n) - ( x0 %*% beta ) )
+  bu = colMeans( matrix(y0, n, length(k)) - ( x0 %*% beta ) )
 
   out = list(beta=beta,status=status,k=k,x=x0,y=y0,bx=bx,by=by,bu=bu,
              intercept=intercept)
