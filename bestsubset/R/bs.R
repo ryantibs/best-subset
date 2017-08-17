@@ -300,8 +300,9 @@ coef.bs = function(object, s, ...) {
   }
   mat = matrix(rep(object$k,length(s)),nrow=length(s),byrow=TRUE)
   ind = max.col(mat==s,ties.method="first")
-
-  beta.mat = object$beta[,ind]
+  # when s is a scalar, beta.mat is not a matrix
+  # it causes a bug since ncol(beta.mat) = NULL when beta.mat is a numeric vector
+  beta.mat = as.matrix( object$beta[,ind] )
   if (object$intercept) return(rbind(rep(object$by,ncol(beta.mat)),beta.mat))
   else return(beta.mat)
 }
