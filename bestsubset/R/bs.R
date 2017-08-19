@@ -301,7 +301,7 @@ coef.bs = function(object, s, ...) {
   mat = matrix(rep(object$k,length(s)),nrow=length(s),byrow=TRUE)
   ind = max.col(mat==s,ties.method="first")
 
-  beta.mat = object$beta[,ind]
+  beta.mat = object$beta[,ind,drop=FALSE]
   if (object$intercept) return(rbind(rep(object$by,ncol(beta.mat)),beta.mat))
   else return(beta.mat)
 }
@@ -330,34 +330,4 @@ predict.bs = function(object, newx, s, ...) {
   newx = scale(newx,object$bx,FALSE)
   if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
   return(newx %*% beta)
-}
-
-##############################
-
-# Interpolation function to get coefficients
-
-coef.interpolate = function(beta, s, knots, decreasing=TRUE) {
-  # Sort the s values
-  o = order(s,decreasing=decreasing)
-  s = s[o]
-
-  k = length(s)
-  mat = matrix(rep(knots,each=k),nrow=k)
-  if (decreasing) b = s >= mat
-  else b = s <= mat
-  blo = max.col(b,ties.method="first")
-  bhi = pmax(blo-1,1)
-
-  i = bhi==blo
-  p = numeric(k)
-  p[i] = 0
-  p[!i] = ((s-knots[blo])/(knots[bhi]-knots[blo]))[!i]
-
-  beta = t((1-p)*t(beta[,blo,drop=FALSE]) + p*t(beta[,bhi,drop=FALSE]))
-  colnames(beta) = as.character(round(s,3))
-  rownames(beta) = NULL
-
-  # Return in original order
-  o = order(o)
-  return(beta[,o,drop=FALSE])
 }
