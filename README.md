@@ -13,7 +13,7 @@ The mixed integer programming formulation of subset selection and
 simulation setup is based on the paper: Bertsimas, King, Mazumder
 (2016), "Best subset selection via a modern optimization lens".
 
-For our discussion paper on best subset selection, forward stepwise selection,
+For our discussion paper on best subset selection, forward stepwise,
 and the lasso, see: https://arxiv.org/abs/1707.08692.
 
 ### Install the R package
