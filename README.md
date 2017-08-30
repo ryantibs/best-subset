@@ -7,11 +7,15 @@ regression, based on a mixed integer quadratic program formulation of
 the subset selection problem and the Gurobi mixed integer program 
 optimizer. It also contains tools for running simulations comparing
 best subset selection to other common sparse regression estimators
-such as the lasso and forward stepwise.
+such as the lasso and forward stepwise selection.
 
 The mixed integer programming formulation of subset selection and
 simulation setup is based on the paper: Bertsimas, King, Mazumder
 (2016), "Best subset selection via a modern optimization lens".
+
+This package is meant to accompany our discussion paper on best subset 
+selection, forward stepwise selection, and the lasso, which can be found at: 
+https://arxiv.org/abs/1707.08692
 
 ### Install the R package
 
