@@ -127,14 +127,16 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 #' @param rho,s,beta.type,snr,reorder. Arguments to pass to
 #'   \code{\link{sim.xy}}; see the latter's help file for details.
 #'
-#' @return A list with components err.train, err.val, err.test, prop, risk, nzs,
-#'   opt for the training error, validation error, test error, test proportion
-#'   of variance explained, risk, number of selected nonzero coefficients, and
-#'   relative optimism (difference in test error and training error, divided by
-#'   training error). These are each lists of length N, where N is the number of
-#'   regression methods under consideration (the length of reg.funs). The ith
-#'   element of each list is then a matrix of dimension nrep x m, where m is the
-#'   number of tuning parameters inherent to the ith method.
+#' @return A list with components err.train, err.val, err.test, prop,
+#'     risk, nzs, opt, F1 for the training error, validation error,
+#'     test error, test proportion of variance explained, risk, number
+#'     of selected nonzero coefficients, relative optimism (difference
+#'     in test error and training error, divided by training error),
+#'     and F1 measure of classification accuracy. These are each lists
+#'     of length N, where N is the number of regression methods under
+#'     consideration (the length of reg.funs). The ith element of each
+#'     list is then a matrix of dimension nrep x m, where m is the
+#'     number of tuning parameters inherent to the ith method.
 #'
 #' @seealso \code{\link{sim.xy}}
 #' @author Trevor Hastie, Robert Tibshirani, Ryan Tibshirani
@@ -154,13 +156,13 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
   reg.names = names(reg.funs)
   if (is.null(reg.names)) reg.names = paste("Method",1:N)
 
-  err.train = err.val = err.test = prop = risk = nzs = opt = runtime =
+  err.train = err.val = err.test = prop = risk = nzs = opt = runtime = F1 =
     vector(mode="list",length=N)
   names(err.train) = names(err.val) = names(err.test) = names(prop) =
-    names(risk) = names(nzs) = names(opt) = names(runtime) = reg.names
+    names(risk) = names(nzs) = names(opt) = names(runtime) =  names(F1) =reg.names
   for (j in 1:N) {
     err.train[[j]] = err.val[[j]] = err.test[[j]] = prop[[j]] = risk[[j]] =
-      nzs[[j]] = opt[[j]] = runtime[[j]] = matrix(NA,nrep,1)
+      nzs[[j]] = opt[[j]] = runtime[[j]] = F1[[j]] = matrix(NA,nrep,1)
   }
   filled = rep(FALSE,N)
   err.null = risk.null = sigma = rep(NA,nrep)
@@ -177,7 +179,7 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
     risk.null[i] = diag(t(xy.obj$beta) %*% xy.obj$Sigma %*% xy.obj$beta)
     err.null[i] = risk.null[i] + xy.obj$sigma^2
     sigma[i] = xy.obj$sigma
-    
+
     # Loop through the regression methods
     for (j in 1:N) {
       if (verbose) {
@@ -195,7 +197,7 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         # training and validation sets
         betahat = as.matrix(coef(reg.obj))
         m = ncol(betahat); nc = nrow(betahat)
-        
+
         # Check for intercept
         if (nc == p+1) {
           intercept = TRUE
@@ -210,7 +212,7 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         # Populate empty matrices for our metrics, of appropriate dimension
         if (!filled[j]) {
           err.train[[j]] = err.val[[j]] = err.test[[j]] = prop[[j]] =
-            risk[[j]] = nzs[[j]] = opt[[j]] = matrix(NA,nrep,m)
+            risk[[j]] = nzs[[j]] = opt[[j]]  = F1[[j]] = matrix(NA,nrep,m)
           filled[j] = TRUE
           # N.B. Filling with NAs is important, because the filled flag could
           # be false for two reasons: i) we are at the first iteration, or ii)
@@ -225,7 +227,13 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         if (intercept) risk[[j]][i,] = risk[[j]][i,] + betahat0^2
         err.test[[j]][i,] = risk[[j]][i,] + xy.obj$sigma^2
         prop[[j]][i,] = 1 - err.test[[j]][i,] / err.null[i]
-        nzs[[j]][i,] = colSums(betahat != 0)
+        pos= colSums(betahat != 0)
+        tpos=colSums( (betahat!=0)*(xy.obj$beta!=0))
+        fpos=pos-tpos
+        fneg=colSums( (betahat==0)*(xy.obj$beta!=0))
+        fone=2*tpos/(2*tpos+fpos+fneg)
+        F1[[j]][i, ]=fone
+        nzs[[j]][i, ] = pos
         opt[[j]][i,] = (err.test[[j]][i,] - err.train[[j]][i,]) /
           err.train[[j]][i,]
       }, error = function(err) {
@@ -243,20 +251,20 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
     # Save intermediate results?
     if (!is.null(file) && file.rep > 0 && i %% file.rep == 0) {
       saveRDS(enlist(err.train,err.val,err.test,err.null,prop,risk,risk.null,
-                     nzs,opt,sigma,runtime),file=file)
+                     nzs,opt,sigma,runtime,F1),file=file)
     }
   }
 
   # Save results now (in case of an error that might occur below)
   out = enlist(err.train,err.val,err.test,err.null,prop,risk,risk.null,nzs,opt,
-               sigma,runtime)
+               sigma,runtime, F1)
   if (!is.null(file)) saveRDS(out, file)
 
   # Tune according to validation error, and according to test error
   out = choose.tuning.params(out)
-  
+
   # Save final results
-  out = c(out,list(rho=rho,s=s,beta.type=beta.type,snr=snr,call=this.call))  
+  out = c(out,list(rho=rho,s=s,beta.type=beta.type,snr=snr,call=this.call))
   class(out) = "sim"
   if (!is.null(file)) { saveRDS(out, file); invisible(out) }
   else return(out)
@@ -287,8 +295,8 @@ choose.tuning.params = function(obj) {
 }
 
 #' Tuning and aggregation function for sim object.
-#' 
-#' Tune and aggregate a given metric across a set of simulations, stored in a 
+#'
+#' Tune and aggregate a given metric across a set of simulations, stored in a
 #'   sim object (produced by \code{\link{sim.master}}).
 #'
 #' @param obj The sim object.
@@ -319,7 +327,7 @@ choose.tuning.params = function(obj) {
 #'   std, med, or mad, are each vectors of length N, containing the average of
 #'   the metric for each method under validation tuning; similarly for the
 #'   postfixes std, med, and mad; and for the elements named z.ora.xxx.
-#' 
+#'
 #' @export tune.and.aggregate
 
 tune.and.aggregate = function(obj, z, tune=TRUE) {
@@ -344,7 +352,7 @@ tune.and.aggregate = function(obj, z, tune=TRUE) {
     z.val = z.ora = vector(mode="list",length=N)
     z.val.ave = z.val.std = z.val.med = z.val.mad = rep(NA,N)
     z.ora.ave = z.ora.std = z.ora.med = z.ora.mad = rep(NA,N)
-  
+
     for (j in 1:N) {
       # Validation tuning
       z.val[[j]] = z[[j]][1:nrep + (obj$tun.val[,j]-1)*nrep]
@@ -367,12 +375,12 @@ tune.and.aggregate = function(obj, z, tune=TRUE) {
 
   return(out)
 }
-                
+
 ##############################
 
 #' Print function for sim object.
 #'
-#' Summarize and print the results of a set of simulations, stored in an object 
+#' Summarize and print the results of a set of simulations, stored in an object
 #'   of class sim (produced by \code{\link{sim.master}}).
 #'
 #' @param x The sim object.
@@ -483,7 +491,7 @@ print.sim = function(x, what=c("error","risk"), type=c("ave","med"), std=TRUE,
 #'   make.pdf is TRUE. Defaults are 6 for both.
 #'
 #' @export plot.sim
-#' @export 
+#' @export
 
 plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
                     what=c("error","risk"), type=c("ave","med"), std=TRUE,
@@ -494,7 +502,7 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
   if (!require("ggplot2",quietly=TRUE)) {
     stop("Package ggplot2 not installed (required here)!")
   }
-  
+
   what = match.arg(what)
   type = match.arg(type)
   if (is.null(method.names)) method.names = names(x$err.test[method.nums])
@@ -509,7 +517,7 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
   }
   err.obj = tune.and.aggregate(x, err.rel)
   nzs.obj = tune.and.aggregate(x, x$nzs)
-  
+
   if (type=="ave") {
     xlist = nzs.obj$z.ave
     ylist = err.obj$z.ave
@@ -527,7 +535,7 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
                    se=unlist(ybars[ii]),
                    Method=factor(rep(method.names,
                                       lapply(xlist[ii],length))))
-  
+
   gp = ggplot(dat, aes(x=x,y=y,color=Method)) +
     xlab("Number of nonzero coefficients") +
     ylab(ifelse(what=="error",
@@ -535,7 +543,7 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
                 "Relative risk (to null model)")) +
     geom_line(lwd=lwd) + geom_point(pch=pch) + theme_bw()
   if (std) gp = gp + geom_errorbar(aes(ymin=y-se,ymax=y+se), width=0.2)
-  if (!is.null(main)) gp = gp + ggtitle(main) 
+  if (!is.null(main)) gp = gp + ggtitle(main)
   if (!legend) gp = gp + theme(legend.pos="none")
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")

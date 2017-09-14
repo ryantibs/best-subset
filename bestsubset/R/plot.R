@@ -49,7 +49,7 @@
 plot.from.file = function(file.list,
                           row=c("beta","rho","snr"), col=c("rho","beta","snr"),
                           method.nums=NULL, method.names=NULL,
-                          what=c("error","risk","prop","nonzero"), rel.to=NULL,
+                          what=c("error","risk","prop","F","nonzero"), rel.to=NULL,
                           tuning=c("validation","oracle"), type=c("ave","med"),
                           std=TRUE, lwd=1, pch=19, main=NULL, ylim=NULL,
                           legend.pos=c("bottom","right","top","left","none"),
@@ -60,7 +60,7 @@ plot.from.file = function(file.list,
   if (!require("ggplot2",quietly=TRUE)) {
     stop("Package ggplot2 not installed (required here)!")
   }
-  
+
   row = match.arg(row)
   col = match.arg(col)
   if (row==col) stop("row and col must be different")
@@ -69,14 +69,14 @@ plot.from.file = function(file.list,
   tuning = match.arg(tuning)
   type = match.arg(type)
   legend.pos = match.arg(legend.pos)
-  
+
   # Set the method numbers and names
   sim.obj = readRDS(file.list[1])
   if (is.null(method.nums)) method.nums = 1:length(sim.obj$err.test)
   if (is.null(method.names)) method.names =
                                names(sim.obj$err.test[method.nums])
   N = length(method.nums)
-  
+
   # Set the base number and name
   if (is.null(rel.to)) {
     base.num = 0
@@ -86,12 +86,13 @@ plot.from.file = function(file.list,
     base.num = which(method.nums==rel.to)
     base.name = tolower(method.names[base.num])
   }
-  
+
   # Set the y-label
   ylab = switch(what,
                 error=paste0("Relative test error (to ",base.name,")"),
                 risk=paste0("Relative risk (to ",base.name,")"),
                 prop="Proportion of variance explained",
+                F="F classification of nonzeros",
                 nonzero="Number of nonzeros")
 
   # Collect the y-variable from the file list
@@ -106,11 +107,12 @@ plot.from.file = function(file.list,
                         error="err.test",
                         risk="risk",
                         prop="prop",
+                        F="F1",
                         nonzero="nzs")]]
     res = tune.and.aggregate(sim.obj, z)
 
-    # For prop and nonzero we ignore any request for a relative metric
-    if (what=="prop" || what=="nonzero") {
+    # For prop, F  and nonzero we ignore any request for a relative metric
+    if (what=="prop" || what=="F" || what=="nonzero") {
       yvec = c(yvec,res[[paste0("z.",substr(tuning,1,3),".",type)]][method.nums])
       ybar = c(ybar,res[[paste0("z.",substr(tuning,1,3),".",
                                 ifelse(type=="ave","std","mad"))]][method.nums])
@@ -131,21 +133,21 @@ plot.from.file = function(file.list,
                                                         "std","mad"))]]))
     }
   }
-  
+
   # Set the x-variable and x-label
   xvec = snr.vec
   xlab = "Signal-to-noise ratio"
 
   # Set the y-limits
   if (is.null(ylim)) ylim = range(yvec-ybar, yvec+ybar)
-  
+
   # Produce the plot
   beta.vec = factor(beta.vec)
   rho.vec = factor(rho.vec)
   snr.vec = factor(snr.vec)
   levels(beta.vec) = paste("Beta-type", levels(beta.vec))
   levels(rho.vec) = paste("Correlation", levels(rho.vec))
-  
+
   dat = data.frame(x=xvec, y=yvec, se=ybar,
                    beta=beta.vec, rho=rho.vec, snr=snr.vec,
                    Method=factor(rep(method.names, length=length(xvec))))
@@ -170,7 +172,7 @@ plot.from.file = function(file.list,
   if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main)
-  if (!is.null(ylim)) gp = gp + 
+  if (!is.null(ylim)) gp = gp +
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")
   else gp

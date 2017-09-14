@@ -25,6 +25,11 @@ plot.from.file(short.list, what="prop", rel.to=NULL, tuning="val",
                legend.pos="none", make.pdf=TRUE, fig.dir="fig",
                file.name="lo.prop", h=4, w=4)
 
+plot.from.file(short.list, what="F", rel.to=NULL, tuning="val",
+               method.nums=method.nums, method.names=method.names,
+               legend.pos="none", make.pdf=TRUE, fig.dir="fig",
+               file.name="lo.F", h=4, w=4)
+
 plot.from.file(short.list, what="nonzero", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
                legend.pos="right", make.pdf=TRUE, fig.dir="fig",
