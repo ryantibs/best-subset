@@ -26,6 +26,7 @@ reg.funs[["Lasso"]] = function(x,y) {
 # Now define custom coef and predict functions: where the hacking happens
 coef.lasso2 = function(object, s=NULL, gamma=NULL) {
   beta = as.matrix(coef.lasso(object,s,gamma))
+  nlam = object$nlambda
   nzs = colSums(beta != 0)
   j = nlam - rev(match(p:0, rev(nzs), NA))
   return(beta[,j])
