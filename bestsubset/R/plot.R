@@ -140,7 +140,6 @@ plot.from.file = function(file.list,
 
   # Set the y-limits
   if (is.null(ylim)) ylim = range(yvec-ybar, yvec+ybar)
-
   # Produce the plot
   beta.vec = factor(beta.vec)
   rho.vec = factor(rho.vec)
@@ -172,7 +171,7 @@ plot.from.file = function(file.list,
   if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main)
-  if (!is.null(ylim)) gp = gp +
+#  if (!is.null(ylim)) gp = gp +
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")
   else gp
