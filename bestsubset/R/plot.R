@@ -133,7 +133,6 @@ plot.from.file = function(file.list,
                                                         "std","mad"))]]))
     }
   }
-
   # Set the x-variable and x-label
   xvec = snr.vec
   xlab = "Signal-to-noise ratio"
@@ -151,7 +150,7 @@ plot.from.file = function(file.list,
                    beta=beta.vec, rho=rho.vec, snr=snr.vec,
                    Method=factor(rep(method.names, length=length(xvec))))
 
-  gp = ggplot(dat, aes(x=xvec,y=yvec,color=Method)) +
+  gp = ggplot(dat, aes(x=x,y=y,color=Method)) +
     xlab(xlab) + ylab(ylab) + coord_cartesian(ylim=ylim) +
     geom_line(lwd=lwd) + geom_point(pch=pch) +
     facet_grid(formula(paste(row,"~",col))) +
@@ -163,12 +162,12 @@ plot.from.file = function(file.list,
                                to=max(log(xvec)),length=4)),2)
     gp = gp + scale_x_continuous(trans="log", breaks=snr.breaks)
   }
-  if (std) gp = gp + geom_errorbar(aes(ymin=yvec-se,ymax=yvec+se), width=0.02)
-  if (what=="error") gp = gp + geom_line(aes(x=xvec, y=1+xvec), lwd=0.5,
+  if (std) gp = gp + geom_errorbar(aes(ymin=y-se,ymax=y+se), width=0.02)
+  if (what=="error") gp = gp + geom_line(aes(x=x, y=1+x), lwd=0.5,
                                          linetype=3, color="black")
-  if (what=="prop") gp = gp + geom_line(aes(x=xvec, y=xvec/(1+xvec)), lwd=0.5,
+  if (what=="prop") gp = gp + geom_line(aes(x=x, y=x/(1+x)), lwd=0.5,
                                         linetype=3, color="black")
-  if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
+  if (what =="nonzero") gp = gp + geom_line(aes(x=x, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main)
   if (!is.null(ylim)) gp = gp + coord_cartesian(ylim=ylim)
