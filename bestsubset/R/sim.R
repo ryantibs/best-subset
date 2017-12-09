@@ -19,7 +19,6 @@
 #' @param snr Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
 #'   mu is mean and sigma^2 is the error variance. The error variance is set so
 #'   that the given SNR is achieved. Default is 1.
-#' @param reorder Reorder the variables at random? Default is FALSE.
 #' @return A list with the following components: x, y, xval, yval, Sigma, beta,
 #'   and sigma.
 #'
@@ -49,7 +48,7 @@
 #' @example examples/ex.fs.R
 #' @export sim.xy
 
-sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
+sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1) {
   # Generate predictors
   x = matrix(rnorm(n*p),n,p)
   xval = matrix(rnorm(nval*p),nval,p)
@@ -89,11 +88,6 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
   y = as.numeric(x %*% beta + rnorm(n)*sigma)
   yval = as.numeric(xval %*% beta + rnorm(nval)*sigma)
 
-  # Randomly reorder the variables?
-  if (reorder) {
-    o = sample(p)
-    x = x[,o]; xval = xval[,o]; Sigma = Sigma[o,o]; beta = beta[o]
-  }
   enlist(x,y,xval,yval,Sigma,beta,sigma)
 }
 
@@ -124,19 +118,19 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 #'   simulations results should be saved; setting file.rep to 0 is interpreted
 #'   to mean that simulations results should be saved at the very end, i.e., no
 #'   intermediate saving. Defaults are NULL and 5, respectively.
-#' @param rho,s,beta.type,snr,reorder. Arguments to pass to
-#'   \code{\link{sim.xy}}; see the latter's help file for details.
+#' @param rho,s,beta.type,snr. Arguments to pass to \code{\link{sim.xy}}; see
+#'   the latter's help file for details.
 #'
-#' @return A list with components err.train, err.val, err.test, prop,
-#'     risk, nzs, opt, F1 for the training error, validation error,
-#'     test error, test proportion of variance explained, risk, number
-#'     of selected nonzero coefficients, relative optimism (difference
-#'     in test error and training error, divided by training error),
-#'     and F1 measure of classification accuracy. These are each lists
-#'     of length N, where N is the number of regression methods under
-#'     consideration (the length of reg.funs). The ith element of each
-#'     list is then a matrix of dimension nrep x m, where m is the
-#'     number of tuning parameters inherent to the ith method.
+#' @return A list with components err.train, err.val, err.test, prop, risk, nzs,
+#'   fpos, fneg, F1, opt for the training error, validation error, test error,
+#'   test proportion of variance explained, risk, number of selected nonzero
+#'   coefficients, number of false positives, number of false negatives, F1
+#'   measure, and relative optimism (difference in test error and training
+#'   error, divided by training error), respectively.  These are each lists of
+#'   length N, where N is the number of regression methods under consideration
+#'   (the length of reg.funs). The ith element of each list is then a matrix of
+#'   dimension nrep x m, where m is the number of tuning parameters inherent to
+#'   the ith method.
 #'
 #' @seealso \code{\link{sim.xy}}
 #' @author Trevor Hastie, Robert Tibshirani, Ryan Tibshirani
@@ -146,9 +140,8 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 #' @export sim.master
 
 sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
-                      file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1,
-                      reorder=FALSE) {
-
+                      file=NULL, file.rep=5, rho=0, s=5, beta.type=1, snr=1) {
+  
   this.call = match.call()
   if (!is.null(seed)) set.seed(seed)
 
@@ -156,13 +149,15 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
   reg.names = names(reg.funs)
   if (is.null(reg.names)) reg.names = paste("Method",1:N)
 
-  err.train = err.val = err.test = prop = risk = nzs = opt = runtime = F1 =
-    vector(mode="list",length=N)
+  err.train = err.val = err.test = prop = risk = nzs = fpos = fneg = F1 = 
+    opt = runtime = vector(mode="list",length=N)
   names(err.train) = names(err.val) = names(err.test) = names(prop) =
-    names(risk) = names(nzs) = names(opt) = names(runtime) =  names(F1) =reg.names
+    names(risk) = names(nzs) = names(fpos) = names(fneg) = names(F1) = 
+    names(opt) = names(runtime) = reg.names
   for (j in 1:N) {
     err.train[[j]] = err.val[[j]] = err.test[[j]] = prop[[j]] = risk[[j]] =
-      nzs[[j]] = opt[[j]] = runtime[[j]] = F1[[j]] = matrix(NA,nrep,1)
+      nzs[[j]] = fpos[[j]] = fneg[[j]] = F1[[j]] = opt[[j]] = runtime[[j]] =
+      matrix(NA,nrep,1)
   }
   filled = rep(FALSE,N)
   err.null = risk.null = sigma = rep(NA,nrep)
@@ -175,7 +170,7 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
     }
 
     # Generate x, y, xval, yval
-    xy.obj = sim.xy(n,p,nval,rho,s,beta.type,snr,reorder)
+    xy.obj = sim.xy(n,p,nval,rho,s,beta.type,snr)
     risk.null[i] = diag(t(xy.obj$beta) %*% xy.obj$Sigma %*% xy.obj$beta)
     err.null[i] = risk.null[i] + xy.obj$sigma^2
     sigma[i] = xy.obj$sigma
@@ -212,7 +207,8 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         # Populate empty matrices for our metrics, of appropriate dimension
         if (!filled[j]) {
           err.train[[j]] = err.val[[j]] = err.test[[j]] = prop[[j]] =
-            risk[[j]] = nzs[[j]] = opt[[j]]  = F1[[j]] = matrix(NA,nrep,m)
+            risk[[j]] = nzs[[j]] = fpos[[j]] = fneg[[j]] = F1[[j]] = opt[[j]] =
+            matrix(NA,nrep,m)
           filled[j] = TRUE
           # N.B. Filling with NAs is important, because the filled flag could
           # be false for two reasons: i) we are at the first iteration, or ii)
@@ -227,13 +223,11 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
         if (intercept) risk[[j]][i,] = risk[[j]][i,] + betahat0^2
         err.test[[j]][i,] = risk[[j]][i,] + xy.obj$sigma^2
         prop[[j]][i,] = 1 - err.test[[j]][i,] / err.null[i]
-        pos= colSums(betahat != 0)
-        tpos=colSums( (betahat!=0)*(xy.obj$beta!=0))
-        fpos=pos-tpos
-        fneg=colSums( (betahat==0)*(xy.obj$beta!=0))
-        fone=2*tpos/(2*tpos+fpos+fneg)
-        F1[[j]][i, ]=fone
-        nzs[[j]][i, ] = pos
+        nzs[[j]][i,] = colSums(betahat!=0)
+        tpos = colSums((betahat!=0)*(xy.obj$beta!=0))
+        fpos[[j]][i,] = nzs[[j]][i,]-tpos
+        fneg[[j]][i,] = colSums((betahat==0)*(xy.obj$beta!=0))
+        F1[[j]][i,] = 2*tpos/(2*tpos+fpos[[j]][i,]+fneg[[j]][i,])
         opt[[j]][i,] = (err.test[[j]][i,] - err.train[[j]][i,]) /
           err.train[[j]][i,]
       }, error = function(err) {
@@ -251,13 +245,13 @@ sim.master = function(n, p, nval, reg.funs, nrep=50, seed=NULL, verbose=FALSE,
     # Save intermediate results?
     if (!is.null(file) && file.rep > 0 && i %% file.rep == 0) {
       saveRDS(enlist(err.train,err.val,err.test,err.null,prop,risk,risk.null,
-                     nzs,opt,sigma,runtime,F1),file=file)
+                     nzs,fpos,fneg,F1,opt,sigma,runtime),file=file)
     }
   }
 
   # Save results now (in case of an error that might occur below)
-  out = enlist(err.train,err.val,err.test,err.null,prop,risk,risk.null,nzs,opt,
-               sigma,runtime, F1)
+  out = enlist(err.train,err.val,err.test,err.null,prop,risk,risk.null,nzs,fpos,
+               fneg,F1,opt,sigma,runtime)
   if (!is.null(file)) saveRDS(out, file)
 
   # Tune according to validation error, and according to test error

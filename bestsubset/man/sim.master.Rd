@@ -5,8 +5,7 @@
 \title{Master function for running simulations.}
 \usage{
 sim.master(n, p, nval, reg.funs, nrep = 50, seed = NULL, verbose = FALSE,
-  file = NULL, file.rep = 5, rho = 0, s = 5, beta.type = 1, snr = 1,
-  reorder = FALSE)
+  file = NULL, file.rep = 5, rho = 0, s = 5, beta.type = 1, snr = 1)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
@@ -37,20 +36,22 @@ simulations results should be saved; setting file.rep to 0 is interpreted
 to mean that simulations results should be saved at the very end, i.e., no
 intermediate saving. Defaults are NULL and 5, respectively.}
 
-\item{rho, s, beta.type, snr, reorder.}{Arguments to pass to
-\code{\link{sim.xy}}; see the latter's help file for details.}
+\item{rho, s, beta.type, snr.}{Arguments to pass to \code{\link{sim.xy}}; see
+the latter's help file for details.}
 
 \item{Number}{of repetitions of which to average the results. Default is 50.}
 }
 \value{
 A list with components err.train, err.val, err.test, prop, risk, nzs,
-  opt for the training error, validation error, test error, test proportion
-  of variance explained, risk, number of selected nonzero coefficients, and
-  relative optimism (difference in test error and training error, divided by
-  training error). These are each lists of length N, where N is the number of
-  regression methods under consideration (the length of reg.funs). The ith
-  element of each list is then a matrix of dimension nrep x m, where m is the
-  number of tuning parameters inherent to the ith method.
+  fpos, fneg, F1, opt for the training error, validation error, test error,
+  test proportion of variance explained, risk, number of selected nonzero
+  coefficients, number of false positives, number of false negatives, F1
+  measure, and relative optimism (difference in test error and training
+  error, divided by training error), respectively.  These are each lists of
+  length N, where N is the number of regression methods under consideration
+  (the length of reg.funs). The ith element of each list is then a matrix of
+  dimension nrep x m, where m is the number of tuning parameters inherent to
+  the ith method.
 }
 \description{
 Run a set of simulations with the specified configuration.

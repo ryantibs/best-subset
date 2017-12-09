@@ -25,7 +25,7 @@ standard errors. Default is TRUE.}
 \item{...}{Other arguments (currently not used).}
 }
 \description{
-Summarize and print the results of a set of simulations, stored in an object 
+Summarize and print the results of a set of simulations, stored in an object
   of class sim (produced by \code{\link{sim.master}}).
 }
 

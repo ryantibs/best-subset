@@ -4,8 +4,7 @@
 \alias{sim.xy}
 \title{Predictors and responses generation.}
 \usage{
-sim.xy(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1,
-  reorder = FALSE)
+sim.xy(n, p, nval, rho = 0, s = 5, beta.type = 1, snr = 1)
 }
 \arguments{
 \item{n, p}{The number of training observations, and the number of predictors.}
@@ -28,8 +27,6 @@ details below. Default is 1.}
 \item{snr}{Desired signal-to-noise ratio (SNR), i.e., var(mu)/sigma^2 where
 mu is mean and sigma^2 is the error variance. The error variance is set so
 that the given SNR is achieved. Default is 1.}
-
-\item{reorder}{Reorder the variables at random? Default is FALSE.}
 }
 \value{
 A list with the following components: x, y, xval, yval, Sigma, beta,

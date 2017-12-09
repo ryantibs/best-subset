@@ -40,7 +40,7 @@ A list with components z.ave, z.std, z.med, z.mad, z.val, z.ora,
   postfixes std, med, and mad; and for the elements named z.ora.xxx.
 }
 \description{
-Tune and aggregate a given metric across a set of simulations, stored in a 
+Tune and aggregate a given metric across a set of simulations, stored in a
   sim object (produced by \code{\link{sim.master}}).
 }
 

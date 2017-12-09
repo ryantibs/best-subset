@@ -171,7 +171,7 @@ plot.from.file = function(file.list,
   if (what =="nonzero") gp = gp + geom_line(aes(x=xvec, y=sim.obj$s), lwd=0.5,
                                             linetype=3, color="black")
   if (!is.null(main)) gp = gp + ggtitle(main)
-#  if (!is.null(ylim)) gp = gp +
+  if (!is.null(ylim)) gp = gp + coord_cartesian(ylim=ylim)
   if (make.pdf) ggsave(sprintf("%s/%s.pdf",fig.dir,file.name),
                        height=h, width=w, device="pdf")
   else gp
