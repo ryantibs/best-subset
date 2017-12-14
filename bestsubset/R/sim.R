@@ -83,7 +83,10 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
 
   # Set snr based on sample variance on infinitely large test set
   vmu = as.numeric(t(beta) %*% Sigma %*% beta)
-  sigma = sqrt(vmu/snr)
+  #sigma = sqrt(vmu/snr)
+  sigma = 1.
+  alpha = sqrt(snr/vmu)
+  beta = alpha*beta
 
   # Generate responses
   y = as.numeric(x %*% beta + rnorm(n)*sigma)
@@ -94,7 +97,7 @@ sim.xy = function(n, p, nval, rho=0, s=5, beta.type=1, snr=1, reorder=FALSE) {
     o = sample(p)
     x = x[,o]; xval = xval[,o]; Sigma = Sigma[o,o]; beta = beta[o]
   }
-  enlist(x,y,xval,yval,Sigma,beta,sigma)
+  return(list(x=x,y=y,xval=xval,yval=yval,Sigma=Sigma,beta=beta,sigma=sigma))
 }
 
 #' Master function for running simulations.
