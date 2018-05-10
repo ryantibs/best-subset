@@ -4,8 +4,8 @@
 \alias{plot.from.file}
 \title{Plot the results over several simulation settings.}
 \usage{
-\method{plot}{from.file}(file.list, row = c("beta", "rho", "snr"),
-  col = c("rho", "beta", "snr"), method.nums = NULL, method.names = NULL,
+plot.from.file(file.list, row = c("beta", "rho", "snr"), col = c("rho",
+  "beta", "snr"), method.nums = NULL, method.names = NULL,
   what = c("error", "risk", "prop", "F", "nonzero"), rel.to = NULL,
   tuning = c("validation", "oracle"), type = c("ave", "med"), std = TRUE,
   lwd = 1, pch = 19, main = NULL, ylim = NULL,

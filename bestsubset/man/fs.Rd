@@ -4,8 +4,8 @@
 \alias{fs}
 \title{Forward stepwise regression.}
 \usage{
-fs(x, y, maxsteps = min(ncol(x), 2000), intercept = TRUE,
-  normalize = TRUE, verbose = FALSE)
+fs(x, y, maxsteps = min(nrow(x) - intercept, ncol(x), 2000),
+  intercept = TRUE, normalize = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{x}{Matrix of predictors, of dimension (say) n x p.}
@@ -13,7 +13,8 @@ fs(x, y, maxsteps = min(ncol(x), 2000), intercept = TRUE,
 \item{y}{Vector of responses, of length (say) n.}
 
 \item{maxsteps}{Maximum number of steps of the forward stepwise path to
-compute. Default is min(p,2000).}
+compute. Default is min(n-1,p,2000) for models with intercept and
+min(n,p,2000) for models without it}
 
 \item{intercept, normalize}{Should an intercept be included in the regression
 model? Should the predictors be normalized before computing the path?
@@ -24,9 +25,7 @@ Default is TRUE for both.}
 \value{
 A list with the following components:
   \itemize{
-  \item action, sign: vectors that give the index of the variable added at
-  each step, and the sign of this variable's correlation with the residual
-  upon entry df
+  \item action: vector giving the index of the variable added at each step
   \item df: vector that gives the (naive) degrees of freedom of the model
   at each step, i.e., the number of active predictor variables (+ 1 if there
   is an intercept included)

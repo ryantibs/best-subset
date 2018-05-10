@@ -5,7 +5,8 @@
 #' @param x Matrix of predictors, of dimension (say) n x p.
 #' @param y Vector of responses, of length (say) n.
 #' @param maxsteps Maximum number of steps of the forward stepwise path to
-#'   compute. Default is min(p,2000).
+#'   compute. Default is min(n-1,p,2000) for models with intercept and
+#'   min(n,p,2000) for models without it
 #' @param intercept,normalize Should an intercept be included in the regression
 #'   model? Should the predictors be normalized before computing the path?
 #'   Default is TRUE for both.
@@ -13,9 +14,7 @@
 #'
 #' @return A list with the following components:
 #'   \itemize{
-#'   \item action, sign: vectors that give the index of the variable added at
-#'   each step, and the sign of this variable's correlation with the residual
-#'   upon entry df
+#'   \item action: vector giving the index of the variable added at each step
 #'   \item df: vector that gives the (naive) degrees of freedom of the model
 #'   at each step, i.e., the number of active predictor variables (+ 1 if there
 #'   is an intercept included)
@@ -46,8 +45,8 @@
 #' @example examples/ex.fs.R
 #' @export fs
 
-fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
-              verbose=FALSE) {
+fs = function(x, y, maxsteps=min(nrow(x)-intercept,ncol(x),2000),
+              intercept=TRUE, normalize=TRUE, verbose=FALSE) {
 
   # Set up data
   x = as.matrix(x)
@@ -84,12 +83,13 @@ fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
   # Now iterate to find the sequence of FS estimates
 
   # Things to keep track of, and return at the end
-  maxsteps = maxsteps + 1
-  buf = min(maxsteps,500)
+  buf = min(maxsteps+1,500)
   action = numeric(buf)      # Actions taken
   df = numeric(buf)          # Degrees of freedom
   beta = matrix(0,p,buf)     # FS estimates
 
+  # Record action, df, solution (df and solution are here
+  # correspond to step 0; always a step behind)
   action[1] = j.hit
   df[1] = 0
   beta[,1] = 0
@@ -101,7 +101,7 @@ fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
   sign = sign.hit             # Active signs
   X1 = x[,j.hit,drop=FALSE]   # Matrix X[,A]
   X2 = x[,-j.hit,drop=FALSE]  # Matrix X[,I]
-  k = 2                       # What step are we at?
+  k = 2                       # Step counter
 
   # Compute a skinny QR decomposition of X1
   qr.obj = qr(X1)
@@ -134,21 +134,18 @@ fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
     z = scale(X2.resid,center=F,scale=sqrt(colSums(X2.resid^2)))
     u = as.numeric(t(z) %*% y)
 
-    # If the inactive set is empty, nothing will hit
-    if (r==min(n-intercept,p)) break
-
     # Otherwise find the next hitting time
     sign.u = Sign(u)
     abs.u = sign.u * u
     j.hit = which.max(abs.u)
     sign.hit = sign.u[j.hit]
 
-    # Record the solution
+    # Record action, df, solution
     action[k] = I[j.hit]
     df[k] = r
     beta[A,k] = a
 
-    # Update all of the variables
+    # Update rest of the variables
     r = r+1
     A = c(A,I[j.hit])
     I = I[-j.hit]
@@ -166,33 +163,29 @@ fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
       cat(sprintf("\n%i. Added variable %i, |A|=%i...",k,A[r],r))
     }
 
-    # Step counter
+    # Update counter
     k = k+1
   }
 
+  # Record df and solution at last step
+  df[k] = k-1
+  beta[A,k] = backsolve(R,t(Q1) %*% y)
+
   # Trim
   action = action[Seq(1,k-1)]
-  df = df[Seq(1,k-1),drop=FALSE]
-  beta = beta[,Seq(1,k-1),drop=FALSE]
+  df = df[Seq(1,k)]
+  beta = beta[,Seq(1,k),drop=FALSE]
 
-  # If we reached the maximum number of steps
-  if (k > maxsteps) {
-    if (verbose) {
-      cat(sprintf("\nReached the maximum number of steps (%i),",maxsteps))
-      cat(" skipping the rest of the path.")
-    }
+  # If we stopped short of the complete path, then note this
+  if (k-1 < min(n-intercept,p)) {
     completepath = FALSE
     bls = NULL
   }
 
-  # Otherwise, note that we completed the path
+  # Else we computed the complete path, so record LS solution
   else {
     completepath = TRUE
-
-    # Record the least squares solution. Note that
-    # we have already computed this
-    bls = rep(0,p)
-    bls[A] = a
+    bls = beta[,k]
   }
 
   if (verbose) cat("\n")
@@ -203,11 +196,10 @@ fs = function(x, y, maxsteps=min(ncol(x),2000), intercept=TRUE, normalize=TRUE,
   if (normalize && completepath) bls = bls/sx
 
   # Assign column names
-  colnames(beta) = as.character(Seq(1,k-1))
+  colnames(beta) = as.character(Seq(0,k-1))
 
-  out = list(action=action,sign=sign,df=df,beta=beta,
-    completepath=completepath,bls=bls,x=x0,y=y0,bx=bx,by=by,
-    intercept=intercept,normalize=normalize)
+  out = list(action=action,df=df,beta=beta,completepath=completepath,bls=bls,
+             x=x0,y=y0,bx=bx,by=by,intercept=intercept,normalize=normalize)
   class(out) = "fs"
   return(out)
 }

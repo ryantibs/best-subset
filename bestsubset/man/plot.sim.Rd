@@ -4,10 +4,10 @@
 \alias{plot.sim}
 \title{Plot function for sim object.}
 \usage{
-\method{plot}{sim}(x, method.nums = 1:length(x$err.test),
-  method.names = NULL, what = c("error", "risk"), type = c("ave", "med"),
-  std = TRUE, lwd = 1, pch = 19, main = NULL, legend = TRUE,
-  make.pdf = FALSE, fig.dir = ".", file.name = "sim", w = 6, h = 6)
+plot.sim(x, method.nums = 1:length(x$err.test), method.names = NULL,
+  what = c("error", "risk"), type = c("ave", "med"), std = TRUE,
+  lwd = 1, pch = 19, main = NULL, legend = TRUE, make.pdf = FALSE,
+  fig.dir = ".", file.name = "sim", w = 6, h = 6)
 }
 \arguments{
 \item{x}{The sim object.}

@@ -7,7 +7,8 @@
 #' @param k Sparsity level, i.e., number of nonzero coefficients to allow in the
 #'   subset regression model; can be a vector, in which case the best subset
 #'   selection problem is solved for every value of the sparsity level. Default
-#'   is 1:min(n,p).
+#'   is 1:min(n-1,p,200) for models with intercept and 1:min(n,p,200) for models
+#'   without it.
 #' @param intercept Should an intercept be included in the regression model?
 #'   Default is TRUE.
 #' @param form Either of 1 or 2, specifying the formulation to use for best
@@ -64,7 +65,7 @@
 #' @example examples/ex.fs.R
 #' @export bs
 
-bs = function(x, y, k=0:min(nrow(x),ncol(x)), intercept=TRUE,
+bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x)), intercept=TRUE,
               form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
               maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
 
