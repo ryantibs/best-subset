@@ -65,7 +65,7 @@
 #' @example examples/ex.fs.R
 #' @export bs
 
-bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x)), intercept=TRUE,
+bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
               form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
               maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
 

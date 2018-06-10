@@ -3,6 +3,7 @@
 S3method(coef,bs)
 S3method(coef,fs)
 S3method(coef,lasso)
+S3method(plot,sim)
 S3method(predict,bs)
 S3method(predict,fs)
 S3method(predict,lasso)

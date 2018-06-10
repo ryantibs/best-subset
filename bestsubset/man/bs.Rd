@@ -4,7 +4,7 @@
 \alias{bs}
 \title{Best subset selection.}
 \usage{
-bs(x, y, k = 0:min(nrow(x) - intercept, ncol(x)), intercept = TRUE,
+bs(x, y, k = 0:min(nrow(x) - intercept, ncol(x), 200), intercept = TRUE,
   form = ifelse(nrow(x) < ncol(x), 2, 1), time.limit = 100, nruns = 50,
   maxiter = 1000, tol = 1e-04, polish = TRUE, verbose = FALSE)
 }
