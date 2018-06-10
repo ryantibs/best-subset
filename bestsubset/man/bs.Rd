@@ -16,7 +16,7 @@ bs(x, y, k = 0:min(nrow(x) - intercept, ncol(x), 200), intercept = TRUE,
 \item{k}{Sparsity level, i.e., number of nonzero coefficients to allow in the
 subset regression model; can be a vector, in which case the best subset
 selection problem is solved for every value of the sparsity level. Default
-is 1:min(n-1,p,200) for models with intercept and 1:min(n,p,200) for models
+is 0:min(n-1,p,200) for models with intercept and 0:min(n,p,200) for models
 without it.}
 
 \item{intercept}{Should an intercept be included in the regression model?
