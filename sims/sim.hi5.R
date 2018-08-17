@@ -21,7 +21,7 @@ reg.funs[["Forward stepwise"]] = function(x,y) fs(x,y,intercept=FALSE,
                                                   max=50)
 reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=0:50,
                                              form=2,time.limit=1800,
-                                             param.list=list(Threads=4))
+                                             params=list(Threads=4))
 reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=10,nlam=50)
 
