@@ -63,8 +63,9 @@ save(list=ls(), file=paste0("rds/",stem,".rda"))
 library(bestsubset)
 n = 50; p = 1000
 file.list = system(paste0("ls rds/sim.n",n,".p",p,".*.rds"),intern=TRUE)
-method.nums = c(3,2,1,4)
-method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
+method.nums = c(3,2,1,4,5,6)
+method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso",
+                 "L0Learn 1", "L0Learn 2")
 
 # Validation tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
