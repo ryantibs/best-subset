@@ -17,6 +17,12 @@
 #'   (2016), see references below. Default is 1 if n >= p, and 2 if n < p.
 #' @param time.limit The maximum amount of time (in seconds) to allow Gurobi to
 #'   compute the subset selection solution at each value of k. Default is 100.
+#' @param params A list of parameters to pass to Gurobi. Default is list() which
+#'   means no additional parameters are passed. Examples: use list(Threads=4) to
+#'   specificy that Gurobi should use a maximum of 4 threads when available, or
+#'   list(LogFile=f) to specify that Gurobi should print its progress to a file
+#'   f. Note that if TimeLimit is an element of the params list, then its value
+#'   is overriden by the last argument time.limit.
 #' @param nruns The number of runs of projected gradient descent to use, where
 #'   each run begins at a random initialization for the coefficients. The best
 #'   estimate over all these runs (achieving the lowest criterion value) is
@@ -66,8 +72,8 @@
 #' @export bs
 
 bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
-              form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, nruns=50,
-              maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
+              form=ifelse(nrow(x)<ncol(x),2,1), time.limit=100, params=list(),
+              nruns=50, maxiter=1000, tol=1e-4, polish=TRUE, verbose=FALSE) {
 
   # Check for Matrix package
   if (!require("Matrix",quietly=TRUE)) {
@@ -194,8 +200,7 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
     model$start = c(best.beta, zvec, x%*%best.beta)      # Warm start
   }
 
-  params = list()
-  if (!is.null(time.limit)) params$TimeLimit = time.limit
+  params$TimeLimit = time.limit
   gur.obj = quiet(gurobi(model,params))
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
   if (is.null(gur.obj$x)) gur.obj$x = best.beta

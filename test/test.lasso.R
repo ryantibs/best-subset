@@ -1,6 +1,3 @@
-library(glmnet)
-library(bestsubset)
-
 n = 100
 p = 20
 x = matrix(rnorm(n*p),n,p)

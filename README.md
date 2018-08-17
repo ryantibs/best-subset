@@ -6,8 +6,7 @@ This project contains an implementation of best subset selection in
 regression, based on a mixed integer quadratic program formulation of
 the subset selection problem and the Gurobi mixed integer program 
 optimizer. It also contains tools for running simulations comparing
-best subset selection to other common sparse regression estimators
-such as the lasso and forward stepwise selection.
+best subset selection to the lasso and forward stepwise selection.
 
 The mixed integer programming formulation of subset selection and
 simulation setup is based on the paper: Bertsimas, King, Mazumder

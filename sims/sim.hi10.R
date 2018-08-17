@@ -1,5 +1,6 @@
 ## High-dimensional simulation, n=100 and p=1000
 library(bestsubset)
+library(L0Learn)
 glmnet.control(fdev=0)
 
 # Set some overall simulation parameters
@@ -18,10 +19,19 @@ reg.funs = list()
 reg.funs[["Lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,nlam=100)
 reg.funs[["Forward stepwise"]] = function(x,y) fs(x,y,intercept=FALSE,
                                                   max=50)
-reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=1:50,
-                                             form=2,time.limit=180)
+reg.funs[["Best subset"]] = function(x,y) bs(x,y,intercept=FALSE,k=0:50,
+                                             form=2,time.limit=1800,
+                                             param.list=list(Threads=4))
 reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
-                                                  nrelax=10,nlam=100)
+                                                  nrelax=10,nlam=50)
+
+# Also incorporate L0Learn algorithms from Hazimeh and Mazumder (2017)
+reg.funs[["L0Learn 1"]] = function(x,y) L0Learn.fit(x,y,penalty="L0",
+                                                    algorithm="CDPSI",
+                                                    nLambda=50)
+reg.funs[["L0Learn 2"]] = function(x,y) L0Learn.fit(x,y,penalty="L0L1",
+                                                    algorithm="CDPSI",
+                                                    nGamma=10,nLambda=50)
 
 ## NOTE: the loop below was not run in serial, it was in fact was split up
 ## and run on a Linux cluster
@@ -59,49 +69,49 @@ method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 # Validation tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="val",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/val", 
                file.name=paste0("sim.n",n,".p",p,".val.nzs"))
 
 # Oracle tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="ora",
                method.nums=method.nums, method.names=method.names,
-               main=paste0("n=",n,", p=",p,", s=",5), make.pdf=TRUE,
+               main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
                fig.dir="fig/ora", 
                file.name=paste0("sim.n",n,".p",p,".ora.nzs"))
