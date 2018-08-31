@@ -25,12 +25,17 @@ reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=10,nlam=50)
 
 # Also incorporate L0Learn algorithms from Hazimeh and Mazumder (2017)
-reg.funs[["L0Learn 1"]] = function(x,y) L0Learn.fit(x,y,penalty="L0",
-                                                    algorithm="CDPSI",
-                                                    nLambda=50)
-reg.funs[["L0Learn 2"]] = function(x,y) L0Learn.fit(x,y,penalty="L0L1",
-                                                    algorithm="CDPSI",
-                                                    nGamma=10,nLambda=50)
+reg.funs[["L0Learn 1"]] = function(x,y) {
+  out = L0Learn.fit(x,y,penalty="L0",algorithm="CDPSI",nLambda=50)
+  class(out) = "L0LearnNew"
+  return(out)
+}
+reg.funs[["L0Learn 2"]] = function(x,y) {
+  out = L0Learn.fit(x,y,penalty="L0L1",algorithm="CDPSI",nGamma=10,nLambda=50)
+  class(out) = "L0LearnNew"
+  return(out)
+}
+source("L0LearnNew.R") # This just overwrites the coef and predict functions
 
 file.list = c() # Vector of files for the saved rds files
 for (beta.type in type.vec) {

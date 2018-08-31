@@ -149,7 +149,8 @@ bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
 # @export
 bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
                     time.limit=100, nruns=50, maxiter=1000, tol=1e-4,
-                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE,params=list()) {
+                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE,
+                    params=list()) {
   n = nrow(x)
   p = ncol(x)
 
