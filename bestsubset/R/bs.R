@@ -130,7 +130,7 @@ bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
 
     bs.obj = bs.one.k(x,y,k[i],xtx,form=form,time.limit=time.limit,beta0=beta0,
                       L=L,nruns=nruns,maxiter=maxiter,tol=tol,polish=polish,
-                      verbose=verbose)
+                      verbose=verbose,params=params)
     beta[,i] = bs.obj$beta
     status[i] = bs.obj$status
     beta0 = bs.obj$beta # Use as a warm start for the next value of k
@@ -149,7 +149,7 @@ bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
 # @export
 bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
                     time.limit=100, nruns=50, maxiter=1000, tol=1e-4,
-                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE) {
+                    polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE,params=list()) {
   n = nrow(x)
   p = ncol(x)
 
@@ -204,7 +204,7 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
   gur.obj = quiet(gurobi(model,params))
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
   if (is.null(gur.obj$x)) gur.obj$x = best.beta
-                            
+
   return(list(beta=gur.obj$x[1:p], status=gur.obj$status))
 }
 
@@ -258,7 +258,7 @@ bs.proj.grad = function(x, y, k, nruns=50, maxiter=1000, tol=1e-4, beta0=NULL,
       best.crit = cur.crit
       best.beta = beta
     }
-    
+
     # Start the next run off at a random spot (particular choice matches
     # Rahul's Matlab code)
     beta = beta0 + 2*runif(p)*max(abs(beta0),1)
@@ -335,7 +335,7 @@ predict.bs = function(object, newx, s, ...) {
   beta = coef.bs(object,s)
   if (missing(newx)) newx = object$x
   else newx = matrix(newx,ncol=ncol(object$x))
-  
+
   newx = scale(newx,object$bx,FALSE)
   if (object$intercept) newx = cbind(rep(1,nrow(newx)),newx)
   return(newx %*% beta)
