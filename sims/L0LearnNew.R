@@ -12,12 +12,12 @@ coef.L0LearnNew = function(object) {
   return(mat)
 }
 
-predict.L0LearnNew = function(object) {
+predict.L0LearnNew = function(object,newx) {
   class(object) = "L0Learn"
-  mat = predict(object,lambda=object$lambda[[1]],gamma=object$gamma[1])
+  mat = predict(object,newx,lambda=object$lambda[[1]],gamma=object$gamma[1])
   if (length(object$gamma) > 1) {
     for (i in 2:length(object$gamma)) {
-      mat = cbind(mat, predict(object, lambda=object$lambda[[i]],
+      mat = cbind(mat, predict(object, newx,lambda=object$lambda[[i]],
                                gamma=object$gamma[i]))
     }
   }
