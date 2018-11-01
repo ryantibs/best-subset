@@ -11,7 +11,7 @@ seed = 0 # Random number generator seed
 s = 5 # Number of nonzero coefficients
 type.vec = c(1:3,5) # Simulation settings to consider
 rho.vec = c(0,0.35,0.7) # Pairwise predictor correlations
-snr.vec = exp(seq(log(0.05),log(6),length=10)) # Signal-to-noise ratios 
+snr.vec = exp(seq(log(0.05),log(6),length=10)) # Signal-to-noise ratios
 stem = paste0("sim.n",n,".p",p)
 
 # Regression functions: lasso, forward stepwise, and best subset selection
@@ -25,17 +25,8 @@ reg.funs[["Relaxed lasso"]] = function(x,y) lasso(x,y,intercept=FALSE,
                                                   nrelax=10,nlam=50)
 
 # Also incorporate L0Learn algorithms from Hazimeh and Mazumder (2017)
-reg.funs[["L0Learn 1"]] = function(x,y) {
-  out = L0Learn.fit(x,y,penalty="L0",algorithm="CDPSI",nLambda=50)
-  class(out) = "L0LearnNew"
-  return(out)
-}
-reg.funs[["L0Learn 2"]] = function(x,y) {
-  out = L0Learn.fit(x,y,penalty="L0L1",algorithm="CDPSI",nGamma=10,nLambda=50)
-  class(out) = "L0LearnNew"
-  return(out)
-}
-source("L0LearnNew.R") # This just overwrites the coef and predict functions
+reg.funs[["L0Learn 1"]] = function(x,y)L0Learn.fit(x,y,penalty="L0",algorithm="CDPSI",nLambda=50,intercept=FALSE)
+reg.funs[["L0Learn 2"]] = function(x,y) L0Learn.fit(x,y,penalty="L0L1",algorithm="CDPSI",nGamma=10,nLambda=50, intercept=FALSE)
 
 file.list = c() # Vector of files for the saved rds files
 for (beta.type in type.vec) {
@@ -46,10 +37,10 @@ for (beta.type in type.vec) {
       cat("..... NEW SIMULATION .....\n")
       cat("--------------------------\n")
       cat(paste0("File: ", file, "\n\n"))
-      
+
       sim.master(n, p, nval, reg.funs=reg.funs, nrep=nrep, seed=seed, s=s,
                  verbose=TRUE, file=file, rho=rho, beta.type=beta.type, snr=snr)
-      
+
       file.list = c(file.list, file)
       cat("\n")
     }
@@ -76,42 +67,42 @@ plot.from.file(file.list, what="risk", rel.to=NULL, tuning="val",
 plot.from.file(file.list, what="error", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/val", 
+               fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="val",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/val", 
+               fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="val",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/val", 
+               fig.dir="fig/val",
                file.name=paste0("sim.n",n,".p",p,".val.nzs"))
 
 # Oracle tuning
 plot.from.file(file.list, what="risk", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/ora", 
+               fig.dir="fig/ora",
                file.name=paste0("sim.n",n,".p",p,".ora.risk.rel"))
 
 plot.from.file(file.list, what="error", rel.to=NULL, tuning="ora",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/ora", 
+               fig.dir="fig/ora",
                file.name=paste0("sim.n",n,".p",p,".ora.err.rel"))
 
 plot.from.file(file.list, what="prop", tuning="ora",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/ora", 
+               fig.dir="fig/ora",
                file.name=paste0("sim.n",n,".p",p,".ora.prop"))
 
 plot.from.file(file.list, what="nonzero", tuning="ora",
                method.nums=method.nums, method.names=method.names,
                main=paste0("n=",n,", p=",p,", s=",s), make.pdf=TRUE,
-               fig.dir="fig/ora", 
+               fig.dir="fig/ora",
                file.name=paste0("sim.n",n,".p",p,".ora.nzs"))
