@@ -379,7 +379,8 @@ tune.and.aggregate = function(obj, z, tune=TRUE) {
 #'
 #' @param x The sim object.
 #' @param what Either "error" or "risk", indicating whether the relative test
-#'   error or relative risk should be displayed. Default is "error".
+#'     error (to the Bayes error) or relative risk (to the null risk) should be
+#'     displayed. Default is "error".
 #' @param type Either "ave" or "med", indicating whether the average or median
 #'   of the relative test error metric should be displayed. Default is "ave".
 #' @param std Should standard errors be displayed (in parantheses)? When type
@@ -401,11 +402,11 @@ print.sim = function(x, what=c("error","risk"), type=c("ave","med"), std=TRUE,
     dput(x$call)
   }
 
-  # Construct relative test error or relative risk
+  # Construct relative test error (to Bayes) or relative risk (to null)
   N = length(x$err.test) # Number of methods
   err.rel = vector(mode="list",length=N)
   for (j in 1:N) {
-    if (what=="error") err.rel[[j]] = x$err.test[[j]] / x$err.null
+    if (what=="error") err.rel[[j]] = x$err.test[[j]] / x$sigma^2
     else err.rel[[j]] = x$risk[[j]] / x$risk.null
   }
   err.obj = tune.and.aggregate(x, err.rel)
@@ -470,7 +471,8 @@ print.sim = function(x, what=c("error","risk"), type=c("ave","med"), std=TRUE,
 #' @param method.names the names of the methods that should be plotted. Default
 #'   is NULL, in which case the names are extracted from the sim object.
 #' @param what Either "error" or "risk", indicating whether the relative test
-#'   error or relative risk should be displayed. Default is "error".
+#'     error (to the Bayes error) or relative risk (to the null risk) should be
+#'     displayed. Default is "error".
 #' @param type Either "ave" or "med", indicating whether the average or median
 #'   of the relative test error metric should be displayed. Default is "ave".
 #' @param std Should standard errors be displayed (in parantheses)? When type
@@ -506,7 +508,7 @@ plot.sim = function(x, method.nums=1:length(x$err.test), method.names=NULL,
   N = length(x$err.test) # Number of methods
   err.rel = vector(mode="list",length=N)
   for (j in 1:N) {
-    if (what=="error") err.rel[[j]] = x$err.test[[j]] / x$err.null
+    if (what=="error") err.rel[[j]] = x$err.test[[j]] / x$sigma^2
     else err.rel[[j]] = x$risk[[j]] / x$risk.null
   }
   err.obj = tune.and.aggregate(x, err.rel)
