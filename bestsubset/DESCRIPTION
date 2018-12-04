@@ -1,8 +1,8 @@
 Package: bestsubset
 Type: Package
 Title: Tools for best subset selection in regression
-Version: 1.0.9
-Date: 2018-08-30
+Version: 1.0.10
+Date: 2018-11-26
 Author: Trevor Hastie, Rob Tibshirani, Ryan Tibshirani
 Maintainer: Ryan Tibshirani <ryantibs@stat.cmu.edu>
 Depends: ggplot2, glmnet, gurobi
