@@ -5,7 +5,7 @@ glmnet.control(fdev=0)
 # Set some overall simulation parameters
 n = 70; p = 30 # Size of training set, and number of predictors
 nval = n # Size of validation set
-nrep = 500 # Number of repetitions 
+nrep = 500 # Number of repetitions
 seed = 0 # Random number generator seed
 s = 5 # Number of nonzero coefficients
 beta.type = 2 # Coefficient type
@@ -74,7 +74,7 @@ for (r in 1:nrep) {
   ind = rep(j*nrel, each=nrel) + rep(1:nrel, p+1)
   yhat.las = (x %*% beta.las)[,ind]
   ip.las[r,] = colSums(yhat.las * eps)
-  
+
   yhat.fs = predict(fs(x,y,intercept=FALSE))
   yhat.bs = predict(bs(x,y,intercept=FALSE))
   ip.fs[r,] = colSums(yhat.fs * eps)
@@ -104,8 +104,8 @@ ggplot(dat, aes(x=x,y=y,color=Method)) +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +
   geom_line(lwd=1) + geom_point(pch=19) +
-  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05)) 
-ggsave("fig/df1.pdf", height=4, width=4, device="pdf")
+    theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05))
+ggsave("fig/df1.pdf", height=6, width=6.4, device="pdf")
 
 dat = data.frame(x=rep(0:p,5),
                  y=c(df.bs,df.fs,df.las[,1],df.las[,5],df.las[,9]),
@@ -117,7 +117,7 @@ ggplot(dat, aes(x=x,y=y,color=Method)) +
   xlab("Number of nonzero coefficients") +
   ylab("Degrees of freedom") +
   geom_line(lwd=0.5, color="black", linetype=3, aes(x,x)) +
-  geom_line(lwd=1) + geom_point(pch=19) + 
-  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05)) 
-ggsave("fig/df2.pdf", height=4, width=4, device="pdf")
+  geom_line(lwd=1) + geom_point(pch=19) +
+  theme_bw() + theme(legend.just=c(1,0), legend.pos=c(0.95,0.05))
+ggsave("fig/df2.pdf", height=6, width=6.4, device="pdf")
 
