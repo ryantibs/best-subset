@@ -121,16 +121,16 @@ plot.from.file = function(file.list,
     # For err and risk we respect the request for a relative metric
     else {
       # First build the relative metric
-      met = res[[paste0("z.",substr(tuning,1,3))]][method.nums]
+      met = res[[paste0("z.",substr(tuning,1,3))]]#[method.nums]
       if (base.num == 0 && what=="error") denom = sim.obj$sigma^2
       else if (base.num == 0 && what=="risk") denom = sim.obj$risk.null
       else denom = met[[base.num]]
       z.rel = lapply(met, function(v) v / denom)
       # Now aggregate the relative metric
       res2 = tune.and.aggregate(sim.obj, z.rel, tune=FALSE)
-      yvec = c(yvec,unlist(res2[[paste0("z.",type)]]))
+      yvec = c(yvec,unlist(res2[[paste0("z.",type)]])[method.nums])
       ybar = c(ybar,unlist(res2[[paste0("z.",ifelse(type=="ave",
-                                                        "std","mad"))]]))
+                                                        "std","mad"))]])[method.nums])
     }
   }
   # Set the x-variable and x-label
