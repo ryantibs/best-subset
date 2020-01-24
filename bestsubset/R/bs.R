@@ -151,7 +151,7 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
                     time.limit=100, nruns=50, maxiter=1000, tol=1e-4,
                     polish=TRUE, beta0=NULL, L=NULL, verbose=FALSE,
                     params=list()) {
-  n = nrow(x)
+n = nrow(x)
   p = ncol(x)
 
   # Take care of a trivial case, if needed
@@ -205,6 +205,123 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
   gur.obj = quiet(gurobi(model,params))
   if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
   if (is.null(gur.obj$x)) gur.obj$x = best.beta
+
+  return(list(beta=gur.obj$x[1:p], status=gur.obj$status))
+}
+
+keep_top_k = function(x, k){
+  ids = order(abs(x), decreasing=TRUE)
+  x[-ids[1:k]] = 0
+  x
+}
+
+get_fast_beta_approx = function(X, y, k){
+  beta <- lsfit(X, y, int=FALSE)$coef
+  keep_top_k(beta, k)
+}
+
+theory_driven_big_m = function(X, y, k){
+  # get miu
+  x_correlations <- cor(X, X)
+  diag(x_correlations) <- 0
+  miu <- max(x_correlations)
+  
+  if( miu * (k - 1) >= 1 ){
+    stop("miu[k-1] >= 1, theory start is unavaiable")
+  }
+  gamma_k <- 1 - miu * (k - 1)
+  ## first expression
+  correlations <- cor(X, y)
+  k_highest_correlations <- order(correlations, decreasing=TRUE)[1:k]
+  k_highest_correlations <- k_highest_correlations ** 2 
+  first_expr <- 1 / gamma_k * np.sqrt(np.sum(k_highest_correlations))
+  
+  ## second expression
+  second_expr <- 1 / sqrt(gamma_k) * nrom(y)
+  bigm <- min(first_expr, second_expr)
+  bigm
+}
+
+# @export
+run_bs = function(x, y, k, start,
+                  time.limit=100,nruns=50, maxiter=1000, tol=1e-4,
+                  polish=TRUE, L=NULL, verbose=FALSE,
+                  params=list()) {
+  
+  if ('warm' == start){
+    beta0 <- bs.proj.grad(x,y,k,nruns=nruns,maxiter=maxiter,tol=tol,
+                          polish=polish,L=L,verbose=verbose)
+    warm_start_tau <- 2
+    bigm <- warm_start_tau * max(abs(beta0))
+  } else if ('cold' == start){
+    bigm <- Inf
+    beta0 <- NULL
+  } else if ('mild' == start){
+    beta0 <- get_fast_beta_approx(X, y, k)
+    mild_start_tau <- 5
+    bigm <- mild_start_tau * max(abs(beta0))
+  } else if ('theory' == start){
+    bigm <- theory_driven_big_m(X, y, k)
+    beta0 <- NULL
+  }
+  
+  xtx <- crossprod(x)
+  miqp_bs(x, y, k, xtx, beta0=beta0, bigm)
+}
+
+miqp_bs = function(x, y, k, xtx, time.limit=100, beta0=NULL, bigm=Inf,verbose=FALSE,
+                    params=list()){
+  
+  n = nrow(x)
+  p = ncol(x)
+
+  # Take care of a trivial case, if needed
+  if (k==0) return(list(beta=rep(0,p), status="OPTIMAL"))
+
+  if (verbose) cat("\n  b. Running Gurobi's mixed integer program solver ... ")
+  model = list()
+
+  
+  model$A = sparseMatrix(rep(1, p), (p+1):(2*p), x = rep(1,p))
+  print(ncol(model$A))
+  print(nrow(model$A))
+  model$sense = c(">=")
+  model$rhs = c(p - k)
+  model$ub = c(rep(bigm,p), rep(1,p))
+  model$lb = c(rep(-bigm,p), rep(0,p))
+  model$obj = c(-2*t(x)%*%y, rep(0,p))     # The vector c in the objective
+  model$Q = bdiag(xtx, Matrix(0,p,p))
+  model$vtypes = c(rep("C",p), rep("B",p)) # Variable type: cont or binary
+  
+  if (is.null(beta0)){
+    sos_weights <- lapply(1:p, function(p){
+      sample(c(1,2), 2, replace = FALSE)
+    })
+  } else {
+    z_inv <- as.numeric(beta0 == 0)
+    model$start = c(beta0, z_inv)         # Warm start from proj gradient
+    sos_weights <- lapply(z_inv, function(is_zero){
+      if (is_zero == 1)
+        c(1,2)
+      else
+        c(2,1)
+    })
+  }
+  
+  # sos
+  sos_constraints <- lapply(1:p, function(i){
+    sos <- list()
+    sos$type <- 1
+    sos$index <- c(i, i+p)
+    sos$weight <- sos_weights[[i]]
+    sos
+  })
+  model$sos <- sos_constraints
+
+  params$TimeLimit = time.limit
+  gur.obj = quiet(gurobi(model,params))
+  if (verbose) cat(sprintf("Return status: %s.", gur.obj$status))
+  if (is.null(gur.obj$x)) gur.obj$x = beta0
 
   return(list(beta=gur.obj$x[1:p], status=gur.obj$status))
 }
