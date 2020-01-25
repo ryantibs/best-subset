@@ -212,6 +212,7 @@ n = nrow(x)
 keep_top_k = function(x, k){
   ids = order(abs(x), decreasing=TRUE)
   x[-ids[1:k]] = 0
+  x <- as.numeric(x)
   x
 }
 
@@ -234,22 +235,22 @@ theory_driven_big_m = function(X, y, k){
   correlations <- cor(X, y)
   k_highest_correlations <- order(correlations, decreasing=TRUE)[1:k]
   k_highest_correlations <- k_highest_correlations ** 2 
-  first_expr <- 1 / gamma_k * np.sqrt(np.sum(k_highest_correlations))
+  first_expr <- 1 / gamma_k * sqrt(sum(k_highest_correlations))
   
   ## second expression
-  second_expr <- 1 / sqrt(gamma_k) * nrom(y)
+  second_expr <- 1 / sqrt(gamma_k) * norm(y)
   bigm <- min(first_expr, second_expr)
   bigm
 }
 
 # @export
-run_bs = function(x, y, k, start, miqp_bs_method,
+run_bs = function(X, y, k, start, miqp_bs_method,
                   time.limit=100,nruns=50, maxiter=1000, tol=1e-4,
                   polish=TRUE, L=NULL, verbose=FALSE,
                   params=list()) {
   
   if ('warm' == start){
-    beta0 <- bs.proj.grad(x,y,k,nruns=nruns,maxiter=maxiter,tol=tol,
+    beta0 <- bs.proj.grad(X,y,k,nruns=nruns,maxiter=maxiter,tol=tol,
                           polish=polish,L=L,verbose=verbose)
     warm_start_tau <- 2
     bigm <- warm_start_tau * max(abs(beta0))
@@ -263,13 +264,15 @@ run_bs = function(x, y, k, start, miqp_bs_method,
   } else if ('theory' == start){
     bigm <- theory_driven_big_m(X, y, k)
     beta0 <- NULL
+  } else {
+    stop("start should be one of: warm, cold, mild, theory")
   }
   
-  xtx <- crossprod(x)
-  miqp_bs_method(x, y, k, xtx, beta0=beta0, bigm=bigm)
+  xtx <- crossprod(X)
+  miqp_bs_method(X, y, k, xtx, beta0, bigm)
 }
 
-miqp_bs = function(x, y, k, xtx, time.limit=100, beta0=NULL, bigm=Inf,verbose=FALSE,
+miqp_bs = function(x, y, k, xtx, beta0, bigm, time.limit=100, verbose=FALSE,
                     params=list()){
   
   n = nrow(x)
