@@ -243,7 +243,7 @@ theory_driven_big_m = function(X, y, k){
 }
 
 # @export
-run_bs = function(x, y, k, start,
+run_bs = function(x, y, k, start, miqp_bs_method,
                   time.limit=100,nruns=50, maxiter=1000, tol=1e-4,
                   polish=TRUE, L=NULL, verbose=FALSE,
                   params=list()) {
@@ -266,7 +266,8 @@ run_bs = function(x, y, k, start,
   }
   
   xtx <- crossprod(x)
-  miqp_bs(x, y, k, xtx, beta0=beta0, bigm)
+  miqp_bs_method(x, y, k, xtx, beta0=beta0, bigm=bigm)
+  
 }
 
 miqp_bs = function(x, y, k, xtx, time.limit=100, beta0=NULL, bigm=Inf,verbose=FALSE,
