@@ -103,6 +103,8 @@ bs = function(x, y, k=0:min(nrow(x)-intercept,ncol(x),200), intercept=TRUE,
   y = obj$y
   bx = obj$bx
   by = obj$by
+  sx = obj$sx
+  sy = obj$sy
 
   # Compute largest eigenvalue of X^T X (for step size in projected gradient)
   xtx = crossprod(x)
