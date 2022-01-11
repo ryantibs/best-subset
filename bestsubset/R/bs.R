@@ -194,7 +194,7 @@ bs.one.k = function(x, y, k, xtx, form=ifelse(nrow(x)<ncol(x),2,1),
             rvec, cbind(x, Matrix(0,n,p), -Diagonal(n,1))))
     model$sense = c(rep("<=",2*p+1), rep("=",n)) # Ineq or eq between Ax and b?
     model$rhs = c(rep(0,2*p), k, rep(0,n))       # The vector b
-    zeta.bd = colSums(apply(abs(x),1,sort,decreasing=TRUE)[1:k,,drop=F])*bigm
+    zeta.bd = max(apply(abs(x),1,sort,decreasing=TRUE)[1:k,,drop=F])*bigm
     model$ub = c(rep(bigm,p), rep(1,p), zeta.bd)
     model$lb = c(rep(-bigm,p), rep(0,p), -zeta.bd)
     model$obj = c(-2*t(x)%*%y, rep(0,p+n))       # The vector c in the objective
