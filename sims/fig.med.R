@@ -1,31 +1,27 @@
-## Sample plots for medium-dimensional simulation
+## plots for high-dimensional simulation, s=5
 library(bestsubset)
-n = 500; p = 100
-file.list = system(paste0("ls rds/sim.n",n,".p",p,".*.rds"),intern=TRUE)
-method.nums = c(3,2,1,4)
+n = 50; p = 1000
+file.list = system(paste0("ls ","rds/hi5/*.rds"),intern=TRUE)
+method.nums = c(7,2,1,3)
 method.names = c("Best subset","Forward stepwise","Lasso","Relaxed lasso")
 
-beta.type = 2
-rho = 0.35
-short.list = grep(gsub("\\.","\\\\.",sprintf("*beta%i.rho%0.2f",beta.type,rho)),
-                  file.list, val=TRUE)
 
-plot.from.file(short.list, what="risk", rel.to=NULL, tuning="val",
+plot.from.file(file.list, what="error", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               legend.pos="none", make.pdf=TRUE, fig.dir="fig",
-               file.name="med.risk", h=4, w=4)
+               legend.pos="bottom", make.pdf=TRUE, fig.dir="fig/hi5",
+               file.name="hi5.err")
 
-plot.from.file(short.list, what="error", rel.to=NULL, tuning="val",
+plot.from.file(file.list, what="prop", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               legend.pos="none", make.pdf=TRUE, fig.dir="fig",
-               file.name="med.err", h=4, w=4)
+               legend.pos="bottom", make.pdf=TRUE, fig.dir="fig/hi5",
+               file.name="hi5.prop")
 
-plot.from.file(short.list, what="prop", rel.to=NULL, tuning="val",
+plot.from.file(file.list, what="nonzero", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               legend.pos="none", make.pdf=TRUE, fig.dir="fig",
-               file.name="med.prop", h=4, w=4)
+               legend.pos="bottom", make.pdf=TRUE, fig.dir="fig/hi5",
+               file.name="hi5.nzs")
 
-plot.from.file(short.list, what="nonzero", rel.to=NULL, tuning="val",
+plot.from.file(file.list, what="F", rel.to=NULL, tuning="val",
                method.nums=method.nums, method.names=method.names,
-               legend.pos="right", make.pdf=TRUE, fig.dir="fig",
-               file.name="med.nzs", h=4, w=5.5)
+               legend.pos="bottom", make.pdf=TRUE, fig.dir="fig/hi5",
+               file.name="hi5.F")
